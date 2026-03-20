@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'utils/validators.dart';
 import 'utils/formatters.dart';
+import 'package:paysaral/screens/dashboard_screen.dart';
 
 void main() => runApp(const MyApp());
 
@@ -217,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(children: [
                 const SizedBox(height: 40),
-                const Text('Hi! WELCOME BACK',
+                const Text('Hi! Welcome Back',
                     style: TextStyle(color: Colors.white, fontSize: 24,
                         fontWeight: FontWeight.w600, letterSpacing: 1)),
                 const SizedBox(height: 24),
@@ -335,9 +336,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (_formKey.currentState!.validate()) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Logging in...'),
+                                  content: Text('Login Successful! 🎉'),
                                   backgroundColor: Color(0xFF009688),
+                                  duration: Duration(seconds: 1), // थोड़ा जल्दी हटेगा
                                 ),
+                              );
+                              // ✅ डैशबोर्ड पर जाने का कोड
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => const DashboardScreen()),
                               );
                             }
                           },
@@ -956,7 +963,7 @@ class _RegisterStep4State extends State<RegisterStep4> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 5),
+        const _StepHeader(currentStep: 5),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
