@@ -114,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                   scale: _logoScale,
                   child: Image.asset(
                     'assets/images/welcome-logo.png',
-                    width: 220,
+                    width: 260,
                   ),
                 ),
               ),
@@ -159,7 +159,7 @@ class _SplashScreenState extends State<SplashScreen>
                           Icon(
                             Icons.shield,
                             color: Colors.white.withValues(alpha: 0.3),
-                            size: 14,
+                            size: 16,
                           ),
                         ],
                       ),
@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(children: [
                 const SizedBox(height: 40),
-                const Text('WELCOME BACK',
+                const Text('Hi! WELCOME BACK',
                     style: TextStyle(color: Colors.white, fontSize: 24,
                         fontWeight: FontWeight.w600, letterSpacing: 1)),
                 const SizedBox(height: 24),
@@ -237,20 +237,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       Image.asset('assets/images/paysaral-logo.png', height: 46),
                       const SizedBox(height: 22),
 
-                      // ✅ Mobile Field — Number Keyboard, Max 10
+                      // ✅ Mobile / Email Smart Field — Auto Detect
                       TextFormField(
                         controller: _mobile,
-                        keyboardType: TextInputType.number,
-                        maxLength: 10,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
+                        keyboardType: TextInputType.emailAddress,
+                        maxLength: null,
+                        inputFormatters: [],
                         textInputAction: TextInputAction.next,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: Validators.validateMobile,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Mobile number or Email is required';
+                          }
+                          // Agar sirf numbers hain → Mobile validate
+                          if (RegExp(r'^\d+$').hasMatch(value.trim())) {
+                            return value.trim().length == 10
+                                ? null
+                                : 'Mobile number must be 10 digits';
+                          }
+                          // Warna Email validate
+                          return RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(value.trim())
+                              ? null
+                              : 'Enter a Valid mobile number "or" email address';
+                        },
                         style: const TextStyle(fontSize: 14),
                         decoration: _loginInputDecoration(
-                            'Mobile Number', Icons.phone_android),
+                          'M.No/Email ID',
+                          Icons.person_outline,
+                        ),
                       ),
                       const SizedBox(height: 12),
 
@@ -714,7 +728,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                         _docSectionTitle(Icons.credit_card, 'PAN Card Details'),
                         const SizedBox(height: 16),
 
-                        // ✅ PAN Number — Auto Capital, Max 10
+                        // ✅ PAN Number
                         const _KycLabel('PAN Number', isRequired: true),
                         TextFormField(
                           controller: _pan,
@@ -752,7 +766,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                         _docSectionTitle(Icons.badge_outlined, 'Aadhaar Card Details'),
                         const SizedBox(height: 16),
 
-                        // ✅ Aadhaar — Number Keyboard, XXXX-XXXX-XXXX format
+                        // ✅ Aadhaar
                         const _KycLabel('Aadhaar Number', isRequired: true),
                         TextFormField(
                           controller: _aadhar,
@@ -800,7 +814,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                       final imagesValid = _validateImages();
                       if (_formKey.currentState!.validate() && imagesValid) {
                         Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => RegisterStep4(
+                            builder: (_) => RegisterStepPhoto( // ✅ अब ये Photo स्टेप पर जाएगा
                               name: widget.name, mobile: widget.mobile,
                               email: widget.email,
                             )));
@@ -819,7 +833,104 @@ class _RegisterStep3State extends State<RegisterStep3> {
   }
 }
 
-// ==================== REGISTER STEP 4 — Security ====================
+// ==================== REGISTER STEP 4 — Live Verification ====================
+class RegisterStepPhoto extends StatefulWidget {
+  final String name, mobile, email;
+  const RegisterStepPhoto({super.key, required this.name, required this.mobile, required this.email});
+
+  @override
+  State<RegisterStepPhoto> createState() => _RegisterStepPhotoState();
+}
+
+class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
+  File? _ownerSelfie;
+  File? _shopPhoto;
+  bool _selfieError = false;
+  bool _shopError = false;
+  final _picker = ImagePicker();
+
+  Future<void> _pickImage(String type) async {
+    // फिनटेक ऐप के लिए 'Camera' सोर्स बेहतर रहता है ताकि लाइव फोटो आए
+    final picked = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+    if (picked != null) {
+      setState(() {
+        if (type == 'selfie') { _ownerSelfie = File(picked.path); _selfieError = false; }
+        if (type == 'shop') { _shopPhoto = File(picked.path); _shopError = false; }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: _buildAppBar(),
+      body: Column(children: [
+        _StepHeader(currentStep: 4), // ✅ अब यह 4th स्टेप है
+        Expanded(child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            _infoCard('Please take a clear photo of yourself and your shop.'),
+            const SizedBox(height: 20),
+
+            _buildCard(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              _docSectionTitle(Icons.face_retouching_natural, 'Owner Selfie'),
+              const SizedBox(height: 16),
+              const _KycLabel('Live Selfie', isRequired: true),
+              _UploadBox(
+                image: _ownerSelfie,
+                label: 'Tap to open Camera',
+                onTap: () => _pickImage('selfie'),
+                hasError: _selfieError,
+              ),
+              if (_selfieError) const _ErrorText('Please take a clear selfie'),
+              const _HelperText('Make sure your face is clearly visible'),
+
+              const SizedBox(height: 24),
+
+              _docSectionTitle(Icons.storefront_outlined, 'Shop / Office Photo'),
+              const SizedBox(height: 16),
+              const _KycLabel('Live Shop Photo', isRequired: true),
+              _UploadBox(
+                image: _shopPhoto,
+                label: 'Tap to open Camera',
+                onTap: () => _pickImage('shop'),
+                hasError: _shopError,
+              ),
+              if (_shopError) const _ErrorText('Please take a shop photo'),
+              const _HelperText('Photo should show the shop entrance/board'),
+            ])),
+
+            const SizedBox(height: 20),
+            _sslBadge(),
+            const SizedBox(height: 20),
+
+            _NextButton(
+              label: 'Continue',
+              onTap: () {
+                if (_ownerSelfie == null) setState(() => _selfieError = true);
+                if (_shopPhoto == null) setState(() => _shopError = true);
+
+                if (_ownerSelfie != null && _shopPhoto != null) {
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => RegisterStep4( // ✅ अब यह Security (Step 5) पर जाएगा
+                        name: widget.name, mobile: widget.mobile, email: widget.email,
+                      )));
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            _signInRow(context),
+            const SizedBox(height: 24),
+            const _Footer(),
+          ]),
+        )),
+      ]),
+    );
+  }
+}
+
+// ==================== REGISTER STEP 5 — Security ====================
 class RegisterStep4 extends StatefulWidget {
   final String name, mobile, email;
   const RegisterStep4({super.key,
@@ -845,7 +956,7 @@ class _RegisterStep4State extends State<RegisterStep4> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 4),
+        _StepHeader(currentStep: 5),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -1007,53 +1118,69 @@ class _StepHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final steps = ['Personal', 'Business', 'KYC Docs', 'Security'];
+    // 5 स्टेप्स के नाम
+    final steps = ['Personal', 'Business', 'KYC Docs', 'Verification', 'Security'];
     return Container(
-      color: const Color(0xFF009688),
+      color: const Color(0xFF009688), // ✅ एकदम ओरिजिनल Teal कलर
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(children: [
-        Row(children: List.generate(4, (i) => Expanded(
+
+        // ✅ ऊपर वाली 5 प्रोग्रेस लाइन्स
+        Row(children: List.generate(5, (i) => Expanded(
           child: Row(children: [
             Expanded(child: Container(
               height: 4,
               decoration: BoxDecoration(
-                color: i < currentStep ? Colors.white : Colors.white30,
+                color: i < currentStep ? Colors.white : Colors.white30, // ✅ ओरिजिनल कलर
                 borderRadius: BorderRadius.circular(2),
               ),
             )),
-            if (i < 3) const SizedBox(width: 6),
+            if (i < 4) const SizedBox(width: 5),
           ]),
         ))),
+
         const SizedBox(height: 14),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(4, (i) {
-            final isActive = i + 1 == currentStep;
-            final isDone   = i + 1 < currentStep;
-            return Row(children: [
-              Container(
-                width: 26, height: 26,
-                decoration: BoxDecoration(
-                  color: isDone || isActive ? Colors.white : Colors.white30,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(child: isDone
-                    ? const Icon(Icons.check,
-                    color: Color(0xFF009688), size: 15)
-                    : Text('${i + 1}', style: TextStyle(
-                    color: isActive
-                        ? const Color(0xFF009688) : Colors.white70,
-                    fontWeight: FontWeight.bold, fontSize: 12))),
-              ),
-              const SizedBox(width: 5),
-              Text(steps[i], style: TextStyle(
-                  color: isActive ? Colors.white : Colors.white60,
-                  fontSize: 11,
-                  fontWeight: isActive
-                      ? FontWeight.w600 : FontWeight.normal)),
-              if (i < 3) const SizedBox(width: 8),
-            ]);
-          }),
+
+        // ✅ नीचे वाले टेक्स्ट (FittedBox के साथ ताकि स्क्रीन से बाहर ना भागे)
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min, // जितना साइज़ चाहिए बस उतना ही लेगा
+            children: List.generate(5, (i) {
+              final isActive = i + 1 == currentStep;
+              final isDone   = i + 1 < currentStep;
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 26, height: 26, // ✅ ओरिजिनल गोल घेरा
+                    decoration: BoxDecoration(
+                      color: isDone || isActive ? Colors.white : Colors.white30,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(child: isDone
+                        ? const Icon(Icons.check,
+                        color: Color(0xFF009688), size: 15) // ✅ ओरिजिनल हरा टिक
+                        : Text('${i + 1}', style: TextStyle(
+                        color: isActive
+                            ? const Color(0xFF009688) : Colors.white70, // ✅ ओरिजिनल टेक्स्ट कलर
+                        fontWeight: FontWeight.bold, fontSize: 12))),
+                  ),
+                  const SizedBox(width: 5), // घेरे और टेक्स्ट के बीच की दूरी
+                  Text(steps[i], style: TextStyle(
+                      color: isActive ? Colors.white : Colors.white60,
+                      fontSize: 11, // ✅ ओरिजिनल फॉन्ट साइज़
+                      fontWeight: isActive
+                          ? FontWeight.w600 : FontWeight.normal)),
+
+                  // 2 स्टेप्स के बीच की दूरी (आख़िरी वाले में नहीं आएगी)
+                  if (i < 4) const SizedBox(width: 14),
+                ],
+              );
+            }),
+          ),
         ),
+
       ]),
     );
   }
