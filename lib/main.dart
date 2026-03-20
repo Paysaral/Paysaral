@@ -3,11 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // ✅ 1. पैकेज इम्पोर्ट कर लिया
 import 'utils/validators.dart';
 import 'utils/formatters.dart';
 import 'package:paysaral/screens/dashboard_screen.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -70,10 +74,22 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) _bottomCtrl.forward();
     });
 
-    Timer(const Duration(milliseconds: 3500), () {
+    // ✅ 2. जादू यहाँ है: 3.5 सेकंड बाद चेक करेगा कि लॉगिन है या नहीं
+    Timer(const Duration(milliseconds: 3500), () async {
       if (!mounted) return;
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+      if (isLoggedIn) {
+        // अगर लॉगिन है तो सीधा Dashboard
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+      } else {
+        // अगर नहीं है तो Login स्क्रीन
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+      }
     });
   }
 
@@ -105,10 +121,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: SafeArea(
           child: Column(
             children: [
-
               const Spacer(flex: 2),
-
-              // ✅ Logo
               FadeTransition(
                 opacity: _logoFade,
                 child: ScaleTransition(
@@ -119,10 +132,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
-
-              // ✅ Tagline
               FadeTransition(
                 opacity: _textFade,
                 child: SlideTransition(
@@ -138,10 +148,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-
               const Spacer(flex: 2),
-
-              // ✅ Safe & Secure — ekdum neeche
               FadeTransition(
                 opacity: _bottomFade,
                 child: Padding(
@@ -178,7 +185,6 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-
             ],
           ),
         ),
@@ -238,7 +244,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       Image.asset('assets/images/paysaral-logo.png', height: 46),
                       const SizedBox(height: 22),
 
-                      // ✅ Mobile / Email Smart Field — Auto Detect
                       TextFormField(
                         controller: _mobile,
                         keyboardType: TextInputType.emailAddress,
@@ -250,13 +255,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           if (value == null || value.trim().isEmpty) {
                             return 'Mobile number or Email is required';
                           }
-                          // Agar sirf numbers hain → Mobile validate
                           if (RegExp(r'^\d+$').hasMatch(value.trim())) {
                             return value.trim().length == 10
                                 ? null
                                 : 'Mobile number must be 10 digits';
                           }
-                          // Warna Email validate
                           return RegExp(r'^[\w.-]+@[\w.-]+\.\w+$').hasMatch(value.trim())
                               ? null
                               : 'Enter a Valid mobile number "or" email address';
@@ -269,7 +272,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // ✅ Password Field
                       TextFormField(
                         controller: _pass,
                         obscureText: _hidePass,
@@ -329,19 +331,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           ]),
                       const SizedBox(height: 18),
 
-                      // ✅ Login Button
+                      // ✅ 3. Login बटन पर सेव करने का लॉजिक
                       SizedBox(width: double.infinity, height: 50,
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
+
+                              // फोन की मेमोरी में सेव कर दो
+                              SharedPreferences prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('isLoggedIn', true);
+
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Login Successful! 🎉'),
                                   backgroundColor: Color(0xFF009688),
-                                  duration: Duration(seconds: 1), // थोड़ा जल्दी हटेगा
+                                  duration: Duration(seconds: 1),
                                 ),
                               );
-                              // ✅ डैशबोर्ड पर जाने का कोड
+
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(builder: (_) => const DashboardScreen()),
@@ -439,8 +447,6 @@ class _RegisterStep1State extends State<RegisterStep1> {
                   _buildCard(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
-                      // ✅ Name Field
                       const _KycLabel('Full Name', isRequired: true),
                       TextFormField(
                         controller: _name,
@@ -453,8 +459,6 @@ class _RegisterStep1State extends State<RegisterStep1> {
                             'Enter Your Name', Icons.person_outline),
                       ),
                       const SizedBox(height: 16),
-
-                      // ✅ Mobile Field — Sirf Number, Max 10
                       const _KycLabel('Mobile Number', isRequired: true),
                       TextFormField(
                         controller: _mobile,
@@ -471,8 +475,6 @@ class _RegisterStep1State extends State<RegisterStep1> {
                             'Enter 10 Digit Number', Icons.phone_android),
                       ),
                       const SizedBox(height: 16),
-
-                      // ✅ Email Field
                       const _KycLabel('Your ID (Email)', isRequired: true),
                       TextFormField(
                         controller: _email,
@@ -557,8 +559,6 @@ class _RegisterStep2State extends State<RegisterStep2> {
                   _buildCard(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
-                      // ✅ Shop Name
                       const _KycLabel('Business / Shop Name', isRequired: true),
                       TextFormField(
                         controller: _shopName,
@@ -573,7 +573,6 @@ class _RegisterStep2State extends State<RegisterStep2> {
                       const _HelperText('As registered on GST / Trade License'),
                       const SizedBox(height: 16),
 
-                      // ✅ Category Dropdown
                       const _KycLabel('Shop Category', isRequired: true),
                       Container(
                         decoration: BoxDecoration(
@@ -728,14 +727,11 @@ class _RegisterStep3State extends State<RegisterStep3> {
                   _infoCard('Upload clear photos. File size max 2MB.'),
                   const SizedBox(height: 20),
 
-                  // PAN Card Section
                   _buildCard(Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _docSectionTitle(Icons.credit_card, 'PAN Card Details'),
                         const SizedBox(height: 16),
-
-                        // ✅ PAN Number
                         const _KycLabel('PAN Number', isRequired: true),
                         TextFormField(
                           controller: _pan,
@@ -744,7 +740,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                           textCapitalization: TextCapitalization.characters,
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9]')),
-                            UpperCaseTextFormatter(), // ✅ Auto uppercase
+                            UpperCaseTextFormatter(),
                           ],
                           textInputAction: TextInputAction.done,
                           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -753,7 +749,6 @@ class _RegisterStep3State extends State<RegisterStep3> {
                           decoration: _kycInputDecoration('eg. ABCDE1234F', Icons.credit_card),
                         ),
                         const SizedBox(height: 16),
-
                         const _KycLabel('Upload PAN Card', isRequired: true),
                         _UploadBox(
                           image: _panImage,
@@ -766,22 +761,19 @@ class _RegisterStep3State extends State<RegisterStep3> {
                       ])),
                   const SizedBox(height: 16),
 
-                  // Aadhaar Card Section
                   _buildCard(Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _docSectionTitle(Icons.badge_outlined, 'Aadhaar Card Details'),
                         const SizedBox(height: 16),
-
-                        // ✅ Aadhaar
                         const _KycLabel('Aadhaar Number', isRequired: true),
                         TextFormField(
                           controller: _aadhar,
                           keyboardType: TextInputType.number,
-                          maxLength: 14, // 12 digits + 2 dashes
+                          maxLength: 14,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
-                            AadhaarInputFormatter(), // ✅ XXXX-XXXX-XXXX
+                            AadhaarInputFormatter(),
                           ],
                           textInputAction: TextInputAction.done,
                           autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -821,7 +813,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
                       final imagesValid = _validateImages();
                       if (_formKey.currentState!.validate() && imagesValid) {
                         Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => RegisterStepPhoto( // ✅ अब ये Photo स्टेप पर जाएगा
+                            builder: (_) => RegisterStepPhoto(
                               name: widget.name, mobile: widget.mobile,
                               email: widget.email,
                             )));
@@ -857,7 +849,6 @@ class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
   final _picker = ImagePicker();
 
   Future<void> _pickImage(String type) async {
-    // फिनटेक ऐप के लिए 'Camera' सोर्स बेहतर रहता है ताकि लाइव फोटो आए
     final picked = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (picked != null) {
       setState(() {
@@ -873,7 +864,7 @@ class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 4), // ✅ अब यह 4th स्टेप है
+        _StepHeader(currentStep: 4),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -920,7 +911,7 @@ class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
 
                 if (_ownerSelfie != null && _shopPhoto != null) {
                   Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => RegisterStep4( // ✅ अब यह Security (Step 5) पर जाएगा
+                      builder: (_) => RegisterStep4(
                         name: widget.name, mobile: widget.mobile, email: widget.email,
                       )));
                 }
@@ -975,8 +966,6 @@ class _RegisterStep4State extends State<RegisterStep4> {
                   _buildCard(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
-                      // ✅ Password Field
                       const _KycLabel('Password', isRequired: true),
                       TextFormField(
                         controller: _pass,
@@ -1001,7 +990,6 @@ class _RegisterStep4State extends State<RegisterStep4> {
                       const _HelperText('Min 8 chars with number & symbol'),
                       const SizedBox(height: 16),
 
-                      // ✅ Sponsor ID (Optional)
                       const _KycLabel('Sponsor ID', isRequired: false),
                       TextFormField(
                         controller: _sponsor,
@@ -1015,7 +1003,6 @@ class _RegisterStep4State extends State<RegisterStep4> {
                   )),
                   const SizedBox(height: 20),
 
-                  // ✅ Terms & Conditions
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
@@ -1075,7 +1062,6 @@ class _RegisterStep4State extends State<RegisterStep4> {
                   _sslBadge(),
                   const SizedBox(height: 20),
 
-                  // ✅ Create Account Button
                   SizedBox(width: double.infinity, height: 52,
                     child: ElevatedButton(
                       onPressed: () {
@@ -1125,34 +1111,28 @@ class _StepHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 5 स्टेप्स के नाम
     final steps = ['Personal', 'Business', 'KYC Docs', 'Verification', 'Security'];
     return Container(
-      color: const Color(0xFF009688), // ✅ एकदम ओरिजिनल Teal कलर
+      color: const Color(0xFF009688),
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(children: [
-
-        // ✅ ऊपर वाली 5 प्रोग्रेस लाइन्स
         Row(children: List.generate(5, (i) => Expanded(
           child: Row(children: [
             Expanded(child: Container(
               height: 4,
               decoration: BoxDecoration(
-                color: i < currentStep ? Colors.white : Colors.white30, // ✅ ओरिजिनल कलर
+                color: i < currentStep ? Colors.white : Colors.white30,
                 borderRadius: BorderRadius.circular(2),
               ),
             )),
             if (i < 4) const SizedBox(width: 5),
           ]),
         ))),
-
         const SizedBox(height: 14),
-
-        // ✅ नीचे वाले टेक्स्ट (FittedBox के साथ ताकि स्क्रीन से बाहर ना भागे)
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Row(
-            mainAxisSize: MainAxisSize.min, // जितना साइज़ चाहिए बस उतना ही लेगा
+            mainAxisSize: MainAxisSize.min,
             children: List.generate(5, (i) {
               final isActive = i + 1 == currentStep;
               final isDone   = i + 1 < currentStep;
@@ -1160,34 +1140,31 @@ class _StepHeader extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 26, height: 26, // ✅ ओरिजिनल गोल घेरा
+                    width: 26, height: 26,
                     decoration: BoxDecoration(
                       color: isDone || isActive ? Colors.white : Colors.white30,
                       shape: BoxShape.circle,
                     ),
                     child: Center(child: isDone
                         ? const Icon(Icons.check,
-                        color: Color(0xFF009688), size: 15) // ✅ ओरिजिनल हरा टिक
+                        color: Color(0xFF009688), size: 15)
                         : Text('${i + 1}', style: TextStyle(
                         color: isActive
-                            ? const Color(0xFF009688) : Colors.white70, // ✅ ओरिजिनल टेक्स्ट कलर
+                            ? const Color(0xFF009688) : Colors.white70,
                         fontWeight: FontWeight.bold, fontSize: 12))),
                   ),
-                  const SizedBox(width: 5), // घेरे और टेक्स्ट के बीच की दूरी
+                  const SizedBox(width: 5),
                   Text(steps[i], style: TextStyle(
                       color: isActive ? Colors.white : Colors.white60,
-                      fontSize: 11, // ✅ ओरिजिनल फॉन्ट साइज़
+                      fontSize: 11,
                       fontWeight: isActive
                           ? FontWeight.w600 : FontWeight.normal)),
-
-                  // 2 स्टेप्स के बीच की दूरी (आख़िरी वाले में नहीं आएगी)
                   if (i < 4) const SizedBox(width: 14),
                 ],
               );
             }),
           ),
         ),
-
       ]),
     );
   }
@@ -1366,7 +1343,7 @@ InputDecoration _kycInputDecoration(String hint, IconData icon) =>
       hintText: hint,
       hintStyle: const TextStyle(color: Color(0xFFBBBBBB), fontSize: 13),
       prefixIcon: Icon(icon, color: Colors.grey, size: 20),
-      counterText: '', // ✅ maxLength counter hide
+      counterText: '',
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(
@@ -1398,7 +1375,7 @@ InputDecoration _loginInputDecoration(String hint, IconData icon) =>
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
       prefixIcon: Icon(icon, color: Colors.grey, size: 22),
-      counterText: '', // ✅ maxLength counter hide
+      counterText: '',
       filled: true,
       fillColor: const Color(0xFFF0F0F0),
       border: OutlineInputBorder(
