@@ -28,6 +28,7 @@ flutter:
     - assets/images/login-bg.png
     - assets/images/register-bg.png
     - assets/images/welcome-logo.png
+    - assets/images/bg1.png
 
 flutter_launcher_icons:
   android: true
