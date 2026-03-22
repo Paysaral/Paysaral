@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'transaction_history_screen.dart'; // ✅ जादुई स्क्रीन इम्पोर्ट कर ली
 
 class ReportsScreen extends StatelessWidget {
   final double topPadding;
@@ -42,10 +43,10 @@ class ReportsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // ✅ COLORFUL ICONS
-                _reportMenuItem(Icons.menu_book, 'Main Wallet Ledger', 'Check all your wallet top-ups & debits', Colors.blue),
+                // ✅ यहाँ पेज का नाम पास कर रहे हैं
+                _reportMenuItem(context, Icons.menu_book, 'Main Wallet Ledger', 'Check all your wallet top-ups & debits', Colors.blue, 'Main Wallet Ledger'),
                 _divider(),
-                _reportMenuItem(Icons.account_balance, 'AEPS Settlement Ledger', 'History of wallet to bank transfers', Colors.orange),
+                _reportMenuItem(context, Icons.account_balance, 'AEPS Settlement Ledger', 'History of wallet to bank transfers', Colors.orange, 'AEPS Settlement Ledger'),
               ],
             ),
           ),
@@ -66,13 +67,13 @@ class ReportsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _reportMenuItem(Icons.phone_android, 'Recharge & BBPS History', 'Mobile, DTH, Electricity bill status', Colors.purple),
+                _reportMenuItem(context, Icons.phone_android, 'Recharge & BBPS History', 'Mobile, DTH, Electricity bill status', Colors.purple, 'Recharge History'),
                 _divider(),
-                _reportMenuItem(Icons.fingerprint, 'AEPS & mATM Report', 'Cash withdrawal & balance enquiry info', Colors.teal),
+                _reportMenuItem(context, Icons.fingerprint, 'AEPS & mATM Report', 'Cash withdrawal & balance enquiry info', Colors.teal, 'AEPS & mATM Report'),
                 _divider(),
-                _reportMenuItem(Icons.sync_alt, 'Money Transfer (DMT)', 'Domestic money remittance status', Colors.indigo),
+                _reportMenuItem(context, Icons.sync_alt, 'Money Transfer (DMT)', 'Domestic money remittance status', Colors.indigo, 'DMT History'),
                 _divider(),
-                _reportMenuItem(Icons.flight_takeoff, 'Travel & Services', 'Flight, Train, PAN Card transaction history', Colors.redAccent),
+                _reportMenuItem(context, Icons.flight_takeoff, 'Travel & Services', 'Flight, Train, PAN Card transaction history', Colors.redAccent, 'Travel Services Report'),
               ],
             ),
           ),
@@ -93,9 +94,9 @@ class ReportsScreen extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _reportMenuItem(Icons.savings, 'Commission Report', 'Detailed report of earnings per service', Colors.green),
+                _reportMenuItem(context, Icons.savings, 'Commission Report', 'Detailed report of earnings per service', Colors.green, 'Commission Report'),
                 _divider(),
-                _reportMenuItem(Icons.request_quote, 'TDS Deduction Report', 'Monthly & Yearly TDS statements', Colors.deepOrange),
+                _reportMenuItem(context, Icons.request_quote, 'TDS Deduction Report', 'Monthly & Yearly TDS statements', Colors.deepOrange, 'TDS Report'),
               ],
             ),
           ),
@@ -122,7 +123,8 @@ class ReportsScreen extends StatelessWidget {
     );
   }
 
-  Widget _reportMenuItem(IconData icon, String title, String subtitle, Color iconColor) {
+  // ✅ FIX: इस फंक्शन में Context और PageTitle जोड़ दिया ताकि यह सीधा स्क्रीन खोल सके
+  Widget _reportMenuItem(BuildContext context, IconData icon, String title, String subtitle, Color iconColor, String pageTitle) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(10),
@@ -156,7 +158,18 @@ class ReportsScreen extends StatelessWidget {
         size: 14,
         color: Colors.grey,
       ),
-      onTap: () {},
+      // ✅ जादुई कोड यहाँ लगा दिया है
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransactionHistoryScreen(
+              pageTitle: pageTitle, // जो नाम भेजोगे, वही हेडर में छपेगा
+              isB2B: true,          // B2B वाला शानदार कमीशन डैशबोर्ड दिखेगा
+            ),
+          ),
+        );
+      },
     );
   }
 

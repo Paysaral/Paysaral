@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // ✅ 1. पैकेज इम्पोर्ट कर लिया
+import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/validators.dart';
 import 'utils/formatters.dart';
 import 'package:paysaral/screens/dashboard_screen.dart';
@@ -74,7 +74,6 @@ class _SplashScreenState extends State<SplashScreen>
       if (mounted) _bottomCtrl.forward();
     });
 
-    // ✅ 2. जादू यहाँ है: 3.5 सेकंड बाद चेक करेगा कि लॉगिन है या नहीं
     Timer(const Duration(milliseconds: 3500), () async {
       if (!mounted) return;
 
@@ -82,11 +81,9 @@ class _SplashScreenState extends State<SplashScreen>
       bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
       if (isLoggedIn) {
-        // अगर लॉगिन है तो सीधा Dashboard
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
       } else {
-        // अगर नहीं है तो Login स्क्रीन
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (_) => const LoginScreen()));
       }
@@ -331,15 +328,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ]),
                       const SizedBox(height: 18),
 
-                      // ✅ 3. Login बटन पर सेव करने का लॉजिक
                       SizedBox(width: double.infinity, height: 50,
                         child: ElevatedButton(
                           onPressed: () async {
                             if (_formKey.currentState!.validate()) {
-
-                              // फोन की मेमोरी में सेव कर दो
                               SharedPreferences prefs = await SharedPreferences.getInstance();
                               await prefs.setBool('isLoggedIn', true);
+                              await prefs.setBool('isB2B', true);
 
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -389,7 +384,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             GestureDetector(
                               onTap: () => Navigator.push(context,
                                   MaterialPageRoute(
-                                      builder: (_) => const RegisterStep1())),
+                                      builder: (_) => const AccountTypeScreen())),
                               child: const Text('Register',
                                   style: TextStyle(color: Color(0xFF009688),
                                       fontWeight: FontWeight.bold, fontSize: 13)),
@@ -410,9 +405,198 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
+// ==================== ACCOUNT TYPE SELECTION (PERFECTLY BALANCED) ====================
+class AccountTypeScreen extends StatelessWidget {
+  const AccountTypeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      body: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.only(top: 50, bottom: 20, left: 20, right: 20),
+            decoration: const BoxDecoration(
+                color: Color(0xFF009688),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                boxShadow: [
+                  BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5))
+                ]
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(8)),
+                    child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                const Text(
+                  'Choose Your Profile',
+                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Select how you want to use Paysaral.',
+                  style: TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // 1️⃣ B2C (Customer) Card - ✅ Deep Premium Blue/Indigo
+                  _buildPremiumCard(
+                    context: context,
+                    title: 'User (for personal use)',
+                    subtitle: 'Recharge & Bill Payments. No KYC required.',
+                    icon: Icons.person_rounded,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E3C72), Color(0xFF2A5298)], // डार्क नेवी ब्लू ग्रेडिएंट
+                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    ),
+                    isB2B: false,
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // 2️⃣ B2B (Retailer) Card
+                  _buildPremiumCard(
+                    context: context,
+                    title: 'Retailer/Merchant (business)',
+                    subtitle: 'Earn commission on every transaction. KYC required.',
+                    icon: Icons.storefront_rounded,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF009688), Color(0xFF004D40)],
+                      begin: Alignment.topLeft, end: Alignment.bottomRight,
+                    ),
+                    isB2B: true,
+                    badge: '🔥 HIGH EARNINGS',
+                  ),
+
+                  const SizedBox(height: 30),
+                  _signInRow(context),
+                  const SizedBox(height: 20),
+                  const _Footer(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPremiumCard({
+    required BuildContext context,
+    required String title, required String subtitle, required IconData icon,
+    required LinearGradient gradient, required bool isB2B, String? badge
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(
+          builder: (_) => RegisterStep1(isB2B: isB2B),
+        ));
+      },
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: gradient.colors.last.withOpacity(0.3),
+              blurRadius: 10, offset: const Offset(0, 5),
+            )
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -15, bottom: -15,
+              child: Icon(icon, size: 100, color: Colors.white.withOpacity(0.12)),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (badge != null)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amberAccent,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+                      ),
+                      child: Text(
+                        badge,
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.black87, letterSpacing: 0.5),
+                      ),
+                    ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(icon, color: Colors.white, size: 28),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  // ✅ FIX: Subtitle का कलर ब्राइट कर दिया ताकि डार्क बैकग्राउंड पर साफ़ दिखे
+                  Text(subtitle, style: TextStyle(fontSize: 12.5, color: Colors.white.withOpacity(0.9), height: 1.4)),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      const Text('Proceed', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle),
+                        child: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 10),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ==================== REGISTER STEP 1 — Personal Info ====================
 class RegisterStep1 extends StatefulWidget {
-  const RegisterStep1({super.key});
+  final bool isB2B;
+  const RegisterStep1({super.key, required this.isB2B});
+
   @override
   State<RegisterStep1> createState() => _RegisterStep1State();
 }
@@ -435,14 +619,14 @@ class _RegisterStep1State extends State<RegisterStep1> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 1),
+        _StepHeader(currentStep: 1, isB2B: widget.isB2B),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _infoCard('Please enter details as per your Aadhaar/PAN card.'),
+                  _infoCard(widget.isB2B ? 'Please enter details as per your Aadhaar/PAN card.' : 'Enter your basic details to create an account.'),
                   const SizedBox(height: 20),
                   _buildCard(Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -496,12 +680,22 @@ class _RegisterStep1State extends State<RegisterStep1> {
                     label: 'Continue',
                     onTap: () {
                       if (_formKey.currentState!.validate()) {
-                        Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => RegisterStep2(
-                              name: _name.text,
-                              mobile: _mobile.text,
-                              email: _email.text,
-                            )));
+                        if (widget.isB2B) {
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => RegisterStep2(
+                                name: _name.text,
+                                mobile: _mobile.text,
+                                email: _email.text,
+                              )));
+                        } else {
+                          Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => RegisterStep4(
+                                name: _name.text,
+                                mobile: _mobile.text,
+                                email: _email.text,
+                                isB2B: false,
+                              )));
+                        }
                       }
                     },
                   ),
@@ -547,7 +741,7 @@ class _RegisterStep2State extends State<RegisterStep2> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 2),
+        const _StepHeader(currentStep: 2, isB2B: true),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -717,7 +911,7 @@ class _RegisterStep3State extends State<RegisterStep3> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 3),
+        const _StepHeader(currentStep: 3, isB2B: true),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -864,7 +1058,7 @@ class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        _StepHeader(currentStep: 4),
+        const _StepHeader(currentStep: 4, isB2B: true),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -913,6 +1107,7 @@ class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
                   Navigator.push(context, MaterialPageRoute(
                       builder: (_) => RegisterStep4(
                         name: widget.name, mobile: widget.mobile, email: widget.email,
+                        isB2B: true,
                       )));
                 }
               },
@@ -931,8 +1126,11 @@ class _RegisterStepPhotoState extends State<RegisterStepPhoto> {
 // ==================== REGISTER STEP 5 — Security ====================
 class RegisterStep4 extends StatefulWidget {
   final String name, mobile, email;
+  final bool isB2B;
+
   const RegisterStep4({super.key,
-    required this.name, required this.mobile, required this.email});
+    required this.name, required this.mobile, required this.email, this.isB2B = true});
+
   @override
   State<RegisterStep4> createState() => _RegisterStep4State();
 }
@@ -954,7 +1152,7 @@ class _RegisterStep4State extends State<RegisterStep4> {
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: _buildAppBar(),
       body: Column(children: [
-        const _StepHeader(currentStep: 5),
+        _StepHeader(currentStep: widget.isB2B ? 5 : 2, isB2B: widget.isB2B),
         Expanded(child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -1064,14 +1262,26 @@ class _RegisterStep4State extends State<RegisterStep4> {
 
                   SizedBox(width: double.infinity, height: 52,
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (!_agree) setState(() => _agreeError = true);
                         if (_formKey.currentState!.validate() && _agree) {
+
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool('isLoggedIn', true);
+                          await prefs.setBool('isB2B', widget.isB2B);
+
+                          if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Account Created Successfully! 🎉'),
                               backgroundColor: Color(0xFF009688),
                             ),
+                          );
+
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                                (route) => false,
                           );
                         }
                       },
@@ -1107,16 +1317,22 @@ class _RegisterStep4State extends State<RegisterStep4> {
 // ==================== STEP HEADER ====================
 class _StepHeader extends StatelessWidget {
   final int currentStep;
-  const _StepHeader({required this.currentStep});
+  final bool isB2B;
+  const _StepHeader({required this.currentStep, this.isB2B = true});
 
   @override
   Widget build(BuildContext context) {
-    final steps = ['Personal', 'Business', 'KYC Docs', 'Verification', 'Security'];
+    final steps = isB2B
+        ? ['Personal', 'Business', 'KYC Docs', 'Verification', 'Security']
+        : ['Personal', 'Security'];
+
+    final totalSteps = steps.length;
+
     return Container(
       color: const Color(0xFF009688),
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(children: [
-        Row(children: List.generate(5, (i) => Expanded(
+        Row(children: List.generate(totalSteps, (i) => Expanded(
           child: Row(children: [
             Expanded(child: Container(
               height: 4,
@@ -1125,7 +1341,7 @@ class _StepHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             )),
-            if (i < 4) const SizedBox(width: 5),
+            if (i < totalSteps - 1) const SizedBox(width: 5),
           ]),
         ))),
         const SizedBox(height: 14),
@@ -1133,7 +1349,7 @@ class _StepHeader extends StatelessWidget {
           fit: BoxFit.scaleDown,
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: List.generate(5, (i) {
+            children: List.generate(totalSteps, (i) {
               final isActive = i + 1 == currentStep;
               final isDone   = i + 1 < currentStep;
               return Row(
@@ -1159,7 +1375,7 @@ class _StepHeader extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: isActive
                           ? FontWeight.w600 : FontWeight.normal)),
-                  if (i < 4) const SizedBox(width: 14),
+                  if (i < totalSteps - 1) const SizedBox(width: 14),
                 ],
               );
             }),

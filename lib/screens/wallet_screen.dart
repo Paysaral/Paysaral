@@ -1,16 +1,31 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'transaction_history_screen.dart'; // ✅ स्क्रीन इम्पोर्ट कर ली
 
-class WalletScreen extends StatelessWidget {
+class WalletScreen extends StatefulWidget {
   final double topPadding;
   final VoidCallback onGoToReports;
 
   const WalletScreen({super.key, required this.topPadding, required this.onGoToReports});
 
   @override
+  State<WalletScreen> createState() => _WalletScreenState();
+}
+
+class _WalletScreenState extends State<WalletScreen> {
+  bool _showDetailedReport = false;
+
+  final List<Map<String, dynamic>> _commissionBreakdown = [
+    {'service': 'AEPS Withdrawal', 'icon': Icons.fingerprint, 'color': Colors.teal, 'business': '₹ 10,200', 'commission': 180.50},
+    {'service': 'Mobile Recharge', 'icon': Icons.phone_android, 'color': Colors.blue, 'business': '₹ 3,500', 'commission': 45.00},
+    {'service': 'Money Transfer (DMT)', 'icon': Icons.sync_alt, 'color': Colors.indigo, 'business': '₹ 1,500', 'commission': 15.00},
+    {'service': 'DTH Recharge', 'icon': Icons.tv, 'color': Colors.orange, 'business': '₹ 250', 'commission': 5.00},
+  ];
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: topPadding + 20, left: 16, right: 16, bottom: 40),
+      padding: EdgeInsets.only(top: widget.topPadding + 20, left: 16, right: 16, bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,13 +48,18 @@ class WalletScreen extends StatelessWidget {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text('Main Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    Icon(Icons.account_balance_wallet, color: AppColors.accentColor, size: 24),
+                  children: [
+                    const Text('Main Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                    // ✅ वॉलेट आइकॉन पर क्लिक करने से भी लेजर खुल जाएगा
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const TransactionHistoryScreen(pageTitle: 'Main Wallet Ledger', isB2B: true)));
+                      },
+                      child: const Icon(Icons.account_balance_wallet, color: AppColors.accentColor, size: 24),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                // ✅ FIX: Balance text size reduced from 36 to 30
                 const Text('₹ 45,230.50', style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
                 Row(
@@ -101,7 +121,6 @@ class WalletScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // ✅ FIX: Balance text size reduced from 32 to 28
                 const Text('₹ 12,500.00', style: TextStyle(color: Colors.black87, fontSize: 27, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
                 Row(
@@ -177,7 +196,6 @@ class WalletScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // ✅ FIX: TDS हटाकर 'Total Business' लगाया गया है
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
@@ -196,17 +214,100 @@ class WalletScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
+
                 SizedBox(
                   width: double.infinity,
                   child: TextButton(
-                    onPressed: onGoToReports,
+                    onPressed: () {
+                      setState(() {
+                        _showDetailedReport = !_showDetailedReport;
+                      });
+                    },
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.grey.shade50,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-                    child: const Text('View Detailed Reports', style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _showDetailedReport ? 'Hide Detailed Reports' : 'View Detailed Reports',
+                          style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          _showDetailedReport ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                          color: AppColors.primaryColor,
+                          size: 20,
+                        )
+                      ],
+                    ),
                   ),
-                )
+                ),
+
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  // बटन के लिए हाइट बढ़ा दी है
+                  height: _showDetailedReport ? (_commissionBreakdown.length * 75).toDouble() + 70 : 0,
+                  child: SingleChildScrollView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    child: Column(
+                      children: [
+                        const Padding(padding: EdgeInsets.only(top: 15, bottom: 8), child: Divider()),
+                        ..._commissionBreakdown.map((data) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              children: [
+                                Container(
+                                  height: 40, width: 40,
+                                  decoration: BoxDecoration(color: data['color'].withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                                  child: Icon(data['icon'], color: data['color'], size: 20),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(data['service'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black87)),
+                                      const SizedBox(height: 2),
+                                      Text('Vol: ${data['business']}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                                Text('+ ₹${data['commission'].toStringAsFixed(2)}', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 14)),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+
+                        // ✅ जादुई बटन: Full Commission Report खोलने के लिए
+                        if (_showDetailedReport)
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const TransactionHistoryScreen(
+                                      pageTitle: 'Commission Report',
+                                      isB2B: true,
+                                    ),
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: AppColors.primaryColor),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('View Full Commission Report', style: TextStyle(color: AppColors.primaryColor)),
+                            ),
+                          )
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

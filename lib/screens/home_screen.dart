@@ -3,7 +3,6 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 
-// 👇 ये तीनों स्क्रीन अब इस्तेमाल होंगी, इसलिए ग्रे से कलरफुल हो जाएंगी
 import 'mobile_recharge_screen.dart';
 import 'dth_recharge_screen.dart';
 import 'transaction_history_screen.dart';
@@ -17,9 +16,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // ✅ नया वेरिएबल जो तय करेगा कि यूज़र रिटेलर है या आम यूज़र
+  bool isB2B = false;
+
   List<Map<String, dynamic>> categorySections = [
     {
       'id': 'banking', 'order': 1, 'title': 'Banking & AEPS', 'isPinned': false,
+      // ✅ यह डब्बा सिर्फ़ रिटेलर को दिखेगा
+      'isB2BOnly': true,
       'services': [
         {'icon': Icons.fingerprint, 'name': 'AEPS'},
         {'icon': Icons.point_of_sale, 'name': 'mATM'},
@@ -31,9 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'id': 'recharge', 'order': 2, 'title': 'Recharge & Bill Pay', 'isPinned': false,
+      'isB2BOnly': false, // यह सबको दिखेगा
       'services': [
-        {'icon': Icons.phone_android, 'name': 'Mobile'}, // ✅ Mobile Screen खुलेगी
-        {'icon': Icons.tv, 'name': 'DTH'}, // ✅ DTH Screen खुलेगी
+        {'icon': Icons.phone_android, 'name': 'Mobile'},
+        {'icon': Icons.tv, 'name': 'DTH'},
         {'icon': Icons.lightbulb_outline, 'name': 'Electricity'},
         {'icon': Icons.credit_card, 'name': 'Credit Card'},
         {'icon': Icons.directions_car, 'name': 'Fastag'},
@@ -44,6 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'id': 'travel', 'order': 3, 'title': 'Travel & More', 'isPinned': false,
+      'isB2BOnly': false, // यह सबको दिखेगा
       'services': [
         {'icon': Icons.flight_takeoff, 'name': 'Flight'},
         {'icon': Icons.train, 'name': 'Train'},
@@ -55,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'id': 'mall', 'order': 4, 'title': 'Paysaral Mall (Shopping)', 'isPinned': false,
+      'isB2BOnly': false, // यह सबको दिखेगा
       'services': [
         {'icon': Icons.shopping_bag_outlined, 'name': 'Electronics'},
         {'icon': Icons.checkroom, 'name': 'Fashion'},
@@ -69,12 +76,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPinnedPreferences();
+    _loadUserData(); // ✅ सबसे पहले यूज़र का डेटा लोड करेंगे
   }
 
-  Future<void> _loadPinnedPreferences() async {
+  // ✅ यह फंक्शन फोन की मेमोरी से चेक करेगा कि यूज़र B2B है या B2C
+  Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
+      isB2B = prefs.getBool('isB2B') ?? false;
+
       for (var section in categorySections) {
         section['isPinned'] = prefs.getBool('pinned_${section['id']}') ?? false;
       }
@@ -102,6 +112,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ जादू: जो सर्विस B2BOnly हैं, वो आम यूज़र को दिखेंगी ही नहीं
+    List<Map<String, dynamic>> displaySections = categorySections.where((section) {
+      if (!isB2B && section['isB2BOnly'] == true) {
+        return false; // आम यूज़र के लिए AEPS वाला डब्बा छुपा दो
+      }
+      return true;
+    }).toList();
+
     return SingleChildScrollView(
       padding: EdgeInsets.only(top: widget.topPadding - 2, bottom: 40),
       child: Column(
@@ -112,7 +130,8 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildPromoBanner(),
           const SizedBox(height: 15),
 
-          ...categorySections.asMap().entries.map((entry) {
+          // ✅ यहाँ अब 'displaySections' का इस्तेमाल किया है
+          ...displaySections.asMap().entries.map((entry) {
             int index = entry.key;
             var section = entry.value;
             return Column(
@@ -156,9 +175,16 @@ class _HomeScreenState extends State<HomeScreen> {
               _topActionIcon(Icons.add_card, 'Add Money', onTap: () {}),
               _topActionIcon(Icons.send_to_mobile, 'To Mobile', onTap: () {}),
               _topActionIcon(Icons.account_balance, 'To Bank', onTap: () {}),
-              // ✅ HISTORY पर क्लिक करने पर खुलेगा
               _topActionIcon(Icons.history_edu, 'History', onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const TransactionHistoryScreen()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => TransactionHistoryScreen(
+                          pageTitle: 'Transaction History',
+                          isB2B: isB2B, // ✅ हिस्ट्री पेज भी इसी हिसाब से खुलेगा
+                        )
+                    )
+                );
               }),
             ],
           ),
@@ -303,7 +329,6 @@ class _HomeScreenState extends State<HomeScreen> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 8, mainAxisSpacing: 4, childAspectRatio: 0.74),
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  // ✅ यहाँ क्लिक करने पर Mobile और DTH पेज खुलेगा
                   onTap: () {
                     if (services[index]['name'] == 'Mobile') {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const MobileRechargeScreen()));

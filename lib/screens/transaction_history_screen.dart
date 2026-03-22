@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
-  const TransactionHistoryScreen({super.key});
+  final String pageTitle;
+  final bool isB2B; // ✅ B2B aur B2C ko alag karne ka switch
+
+  const TransactionHistoryScreen({
+    super.key,
+    required this.pageTitle,
+    this.isB2B = false, // Default B2C rahega
+  });
 
   @override
   State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
@@ -15,12 +22,31 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   String _selectedStatus = 'All';
 
   final List<Map<String, dynamic>> _transactions = [
-    {'title': 'Cashback Received', 'date': '20 Mar 2026, 10:30 AM', 'amount': '+ ₹50.00', 'isCredit': true, 'icon': Icons.card_giftcard, 'status': 'Success'},
-    {'title': 'Mobile Recharge (Jio)', 'date': '19 Mar 2026, 06:15 PM', 'amount': '- ₹299.00', 'isCredit': false, 'icon': Icons.phone_android, 'status': 'Success'},
-    {'title': 'Money sent to Rahul', 'date': '18 Mar 2026, 02:45 PM', 'amount': '- ₹1,500.00', 'isCredit': false, 'icon': Icons.send, 'status': 'Success'},
-    {'title': 'AEPS Settlement', 'date': '18 Mar 2026, 11:20 AM', 'amount': '+ ₹12,000.00', 'isCredit': true, 'icon': Icons.fingerprint, 'status': 'Success'},
-    {'title': 'Electricity Bill (JBVNL)', 'date': '15 Mar 2026, 09:00 PM', 'amount': '- ₹850.00', 'isCredit': false, 'icon': Icons.lightbulb_outline, 'status': 'Failed'},
-    {'title': 'Wallet Topup (UPI)', 'date': '12 Mar 2026, 01:10 PM', 'amount': '+ ₹5,000.00', 'isCredit': true, 'icon': Icons.account_balance_wallet, 'status': 'Success'},
+    {
+      'txnId': 'TXN9876543210', 'title': 'AEPS Cash Withdrawal', 'operator': 'State Bank of India',
+      'date': '22 Mar 2026, 02:30 PM', 'amount': '10,000.00', 'commission': '+ ₹25.00', 'cashback': null,
+      'isCredit': true, 'icon': Icons.fingerprint, 'status': 'Success'
+    },
+    {
+      'txnId': 'TXN1234567890', 'title': 'Mobile Recharge', 'operator': 'Jio Prepaid',
+      'date': '22 Mar 2026, 11:15 AM', 'amount': '299.00', 'commission': '+ ₹8.50', 'cashback': '+ ₹15.00',
+      'isCredit': false, 'icon': Icons.phone_android, 'status': 'Success'
+    },
+    {
+      'txnId': 'TXN4567890123', 'title': 'Money Transfer (DMT)', 'operator': 'HDFC Bank (Rahul)',
+      'date': '21 Mar 2026, 04:45 PM', 'amount': '5,000.00', 'commission': '+ ₹15.00', 'cashback': null,
+      'isCredit': false, 'icon': Icons.sync_alt, 'status': 'Success'
+    },
+    {
+      'txnId': 'TXN7890123456', 'title': 'Electricity Bill', 'operator': 'JBVNL Jharkhand',
+      'date': '20 Mar 2026, 09:00 PM', 'amount': '850.00', 'commission': '+ ₹2.00', 'cashback': null,
+      'isCredit': false, 'icon': Icons.lightbulb_outline, 'status': 'Failed'
+    },
+    {
+      'txnId': 'TXN3456789012', 'title': 'DTH Recharge', 'operator': 'Tata Play',
+      'date': '19 Mar 2026, 01:10 PM', 'amount': '500.00', 'commission': '+ ₹12.50', 'cashback': '+ ₹25.00',
+      'isCredit': false, 'icon': Icons.tv, 'status': 'Success'
+    },
   ];
 
   void _showFilterBottomSheet(BuildContext context) {
@@ -62,7 +88,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                         const SizedBox(height: 10),
                         Wrap(
                           spacing: 8, runSpacing: 8,
-                          children: ['All', 'Recharge', 'DTH', 'Electricity', 'Water', 'Gas', 'Fastag'].map((category) {
+                          children: ['All', 'AEPS', 'Recharge', 'DMT', 'Electricity', 'Water'].map((category) {
                             return ChoiceChip(
                               label: Text(category), selected: _selectedCategory == category, selectedColor: AppColors.accentColor,
                               labelStyle: TextStyle(color: _selectedCategory == category ? Colors.white : Colors.black87, fontWeight: _selectedCategory == category ? FontWeight.bold : FontWeight.normal),
@@ -123,47 +149,204 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgColor,
-      appBar: AppBar(backgroundColor: AppColors.primaryColor, elevation: 0, title: const Text('Recent Transactions', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)), leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context))),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(top: 15, left: 20, right: 20, bottom: 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Showing: $_selectedDate', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey)),
-                OutlinedButton.icon(onPressed: () => _showFilterBottomSheet(context), icon: const Icon(Icons.filter_list, size: 18), label: const Text('Filter & Sort'), style: OutlinedButton.styleFrom(foregroundColor: AppColors.primaryColor, side: const BorderSide(color: AppColors.primaryColor), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)))),
-              ],
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryColor,
+        elevation: 0,
+        title: Text(widget.pageTitle, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 18)),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
+        actions: [
+          IconButton(icon: const Icon(Icons.download_rounded, color: Colors.white), tooltip: 'Download Report', onPressed: () { ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloading Report...'))); })
+        ],
+      ),
+      body: Column(
+        children: [
+          // ================= TOP SUMMARY CARD =================
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 25),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryColor,
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
             ),
-            const SizedBox(height: 15),
-            Container(
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)]),
-              child: ListView.separated(
-                shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), padding: EdgeInsets.zero, itemCount: _transactions.length,
-                separatorBuilder: (context, index) => Divider(height: 1, thickness: 1, color: Colors.grey.shade100, indent: 60),
-                itemBuilder: (context, index) {
-                  var txn = _transactions[index];
-                  bool isCredit = txn['isCredit'];
-                  bool isFailed = txn['status'] == 'Failed';
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    leading: Container(height: 45, width: 45, decoration: BoxDecoration(color: isFailed ? Colors.red.shade50 : AppColors.primaryColor.withOpacity(0.08), borderRadius: BorderRadius.circular(12)), child: Icon(txn['icon'], color: isFailed ? Colors.red : AppColors.primaryColor, size: 22)),
-                    title: Text(txn['title'], style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    subtitle: Padding(padding: const EdgeInsets.only(top: 4), child: Text(txn['date'], style: const TextStyle(fontSize: 11, color: Colors.grey))),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(txn['amount'], style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: isFailed ? Colors.grey : (isCredit ? Colors.green.shade600 : Colors.black87))),
-                        if (isFailed) ...[const SizedBox(height: 2), const Text('Failed', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.bold))]
-                      ],
+            child: widget.isB2B
+
+            // ✅ B2B WALA CARD (Retailer ke liye)
+                ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: const [Icon(Icons.bar_chart, size: 16, color: Colors.grey), SizedBox(width: 4), Text('Total Business', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600))]),
+                      const SizedBox(height: 6),
+                      const Text('₹ 16,649.00', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w800, fontSize: 20)),
+                    ],
+                  ),
+                  Container(height: 40, width: 1, color: Colors.grey.shade300),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(children: const [Icon(Icons.savings_outlined, size: 16, color: Colors.grey), SizedBox(width: 4), Text('Commission', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600))]),
+                      const SizedBox(height: 6),
+                      Text('+ ₹ 63.00', style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.w800, fontSize: 20)),
+                    ],
+                  ),
+                ],
+              ),
+            )
+
+            // ✅ B2C WALA CARD (New Premium White Design)
+                : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              decoration: BoxDecoration(
+                  color: Colors.white, // सफ़ेद बैकग्राउंड
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 5))
+                  ]
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Icon(Icons.stars_rounded, size: 18, color: Colors.orange.shade500), // गोल्डन आइकॉन
+                        const SizedBox(width: 6),
+                        Text('Lifetime Cashback Won', style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w600))
+                      ]),
+                      const SizedBox(height: 6),
+                      const Text('₹ 245.00', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w900, fontSize: 26, letterSpacing: 0.5)),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFF8C00)], // खूबसूरत गोल्डन-ऑरेंज ग्रेडिएंट
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.orange.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))
+                        ]
                     ),
-                  );
-                },
+                    child: const Icon(Icons.card_giftcard_rounded, color: Colors.white, size: 28),
+                  )
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // ================= FILTER ROW =================
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 15, 20, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Showing: $_selectedDate', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                InkWell(
+                  onTap: () => _showFilterBottomSheet(context),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(color: AppColors.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.primaryColor.withOpacity(0.3))),
+                    child: Row(children: const [Icon(Icons.filter_list, size: 16, color: AppColors.primaryColor), SizedBox(width: 4), Text('Filter', style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold, fontSize: 12))]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ================= DETAILED TRANSACTION LIST =================
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 40, top: 5),
+              itemCount: _transactions.length,
+              itemBuilder: (context, index) {
+                var txn = _transactions[index];
+                bool isFailed = txn['status'] == 'Failed';
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade100), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2))]),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(height: 45, width: 45, decoration: BoxDecoration(color: isFailed ? Colors.red.shade50 : AppColors.primaryColor.withOpacity(0.08), borderRadius: BorderRadius.circular(12)), child: Icon(txn['icon'], color: isFailed ? Colors.red : AppColors.primaryColor, size: 22)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(txn['title'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.black87)), const SizedBox(height: 4), Text(txn['date'], style: const TextStyle(fontSize: 11, color: Colors.grey))])),
+                            Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: isFailed ? Colors.red.shade50 : Colors.green.shade50, borderRadius: BorderRadius.circular(6)), child: Text(txn['status'], style: TextStyle(color: isFailed ? Colors.red : Colors.green.shade700, fontSize: 10, fontWeight: FontWeight.bold))),
+                          ],
+                        ),
+                      ),
+
+                      Divider(height: 1, color: Colors.grey.shade100, indent: 16, endIndent: 16),
+
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(children: [const Text('Txn ID: ', style: TextStyle(fontSize: 11, color: Colors.grey)), Text(txn['txnId'], style: const TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.w500)), const SizedBox(width: 6), const Icon(Icons.copy, size: 12, color: Colors.grey)]),
+                                  const SizedBox(height: 4),
+                                  Row(children: [const Text('Operator: ', style: TextStyle(fontSize: 11, color: Colors.grey)), Expanded(child: Text(txn['operator'], style: const TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis))]),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('₹ ${txn['amount']}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, decoration: isFailed ? TextDecoration.lineThrough : null, color: isFailed ? Colors.grey : Colors.black87)),
+                                const SizedBox(height: 4),
+
+                                // ✅ B2B Commission Badge
+                                if (widget.isB2B && !isFailed && txn['commission'] != null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(color: Colors.green.shade50, borderRadius: BorderRadius.circular(4)),
+                                    child: Text('Comm: ${txn['commission']}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
+                                  ),
+
+                                // ✅ B2C Cashback Badge (Customer ko khush karne ke liye)
+                                if (!widget.isB2B && !isFailed && txn['cashback'] != null)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(4)),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.stars, size: 10, color: Colors.orange.shade700),
+                                        const SizedBox(width: 2),
+                                        Text('Cashback: ${txn['cashback']}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange.shade700)),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
