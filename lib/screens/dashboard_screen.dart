@@ -494,9 +494,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Column(
               children: [
-                _reportMenuItem(Icons.menu_book, 'Main Wallet Ledger', 'Check all your wallet top-ups & debits'),
+                // ✅ Colorful Icons Passed Here
+                _reportMenuItem(Icons.menu_book, 'Main Wallet Ledger', 'Check all your wallet top-ups & debits', Colors.blue),
                 _divider(),
-                _reportMenuItem(Icons.account_balance, 'AEPS Settlement Ledger', 'History of wallet to bank transfers'),
+                _reportMenuItem(Icons.account_balance, 'AEPS Settlement Ledger', 'History of wallet to bank transfers', Colors.orange),
               ],
             ),
           ),
@@ -517,13 +518,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Column(
               children: [
-                _reportMenuItem(Icons.phone_android, 'Recharge & BBPS History', 'Mobile, DTH, Electricity bill status'),
+                _reportMenuItem(Icons.phone_android, 'Recharge & BBPS History', 'Mobile, DTH, Electricity bill status', Colors.purple),
                 _divider(),
-                _reportMenuItem(Icons.fingerprint, 'AEPS & mATM Report', 'Cash withdrawal & balance enquiry info'),
+                _reportMenuItem(Icons.fingerprint, 'AEPS & mATM Report', 'Cash withdrawal & balance enquiry info', Colors.teal),
                 _divider(),
-                _reportMenuItem(Icons.sync_alt, 'Money Transfer (DMT)', 'Domestic money remittance status'),
+                _reportMenuItem(Icons.sync_alt, 'Money Transfer (DMT)', 'Domestic money remittance status', Colors.indigo),
                 _divider(),
-                _reportMenuItem(Icons.flight_takeoff, 'Travel & Services', 'Flight, Train, PAN Card transaction history'),
+                _reportMenuItem(Icons.flight_takeoff, 'Travel & Services', 'Flight, Train, PAN Card transaction history', Colors.redAccent),
               ],
             ),
           ),
@@ -544,9 +545,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Column(
               children: [
-                _reportMenuItem(Icons.savings, 'Commission Report', 'Detailed report of earnings per service'),
+                _reportMenuItem(Icons.savings, 'Commission Report', 'Detailed report of earnings per service', Colors.green),
                 _divider(),
-                _reportMenuItem(Icons.request_quote, 'TDS Deduction Report', 'Monthly & Yearly TDS statements'),
+                _reportMenuItem(Icons.request_quote, 'TDS Deduction Report', 'Monthly & Yearly TDS statements', Colors.deepOrange),
               ],
             ),
           ),
@@ -681,23 +682,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Column(
               children: [
-                _profileMenuItem(
-                  Icons.account_balance,
-                  'Bank Accounts',
-                  'Manage settlement banks',
-                ),
+                // ✅ Colorful Icons Passed Here
+                _profileMenuItem(Icons.account_balance, 'Bank Accounts', 'Manage settlement banks', Colors.blue),
                 _divider(),
-                _profileMenuItem(
-                  Icons.storefront,
-                  'Business Details',
-                  'Shop, GST & Trade License',
-                ),
+                _profileMenuItem(Icons.storefront, 'Business Details', 'Shop, GST & Trade License', Colors.orange),
                 _divider(),
-                _profileMenuItem(
-                  Icons.speed,
-                  'Transaction Limits',
-                  'Check daily & monthly limits',
-                ),
+                _profileMenuItem(Icons.speed, 'Transaction Limits', 'Check daily & monthly limits', Colors.purple),
               ],
             ),
           ),
@@ -718,35 +708,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Column(
               children: [
-                _profileSwitchItem(
-                  Icons.fingerprint,
-                  'Fingerprint Login',
-                  'Unlock app with biometric',
-                  _isBiometricEnabled,
-                      (val) {
-                    setState(() {
-                      _isBiometricEnabled = val;
-                    });
-                  },
-                ),
+                _profileSwitchItem(Icons.fingerprint, 'Fingerprint Login', 'Unlock app with biometric', _isBiometricEnabled, (val) {
+                  setState(() { _isBiometricEnabled = val; });
+                }, Colors.teal),
                 _divider(),
-                _profileMenuItem(
-                  Icons.lock_outline,
-                  'Change MPIN / Password',
-                  'Update your security pin',
-                ),
+                _profileMenuItem(Icons.lock_outline, 'Change MPIN / Password', 'Update your security pin', Colors.redAccent),
                 _divider(),
-                _profileMenuItem(
-                  Icons.devices,
-                  'Manage Devices',
-                  'Devices logged into your account',
-                ),
+                _profileMenuItem(Icons.devices, 'Manage Devices', 'Devices logged into your account', Colors.indigo),
                 _divider(),
-                _profileMenuItem(
-                  Icons.language,
-                  'App Language',
-                  'English, Hindi & more',
-                ),
+                _profileMenuItem(Icons.language, 'App Language', 'English, Hindi & more', Colors.lightBlue),
               ],
             ),
           ),
@@ -767,17 +737,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             child: Column(
               children: [
-                _profileMenuItem(
-                  Icons.support_agent,
-                  '24/7 Support',
-                  'Raise a ticket or chat with us',
-                ),
+                _profileMenuItem(Icons.support_agent, '24/7 Support', 'Raise a ticket or chat with us', Colors.green),
                 _divider(),
-                _profileMenuItem(
-                  Icons.description_outlined,
-                  'Terms & Policies',
-                  'Read our rules and privacy policy',
-                ),
+                _profileMenuItem(Icons.description_outlined, 'Terms & Policies', 'Read our rules and privacy policy', Colors.blueGrey),
               ],
             ),
           ),
@@ -846,17 +808,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _profileMenuItem(IconData icon, String title, String subtitle) {
+  // ✅ Updated to accept Icon Color
+  Widget _profileMenuItem(IconData icon, String title, String subtitle, Color iconColor) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFFF0FAF9),
+          color: iconColor.withOpacity(0.12), // ✅ Dynamic light background
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: primaryColor,
+          color: iconColor, // ✅ Dynamic vibrant color
           size: 22,
         ),
       ),
@@ -884,17 +847,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _reportMenuItem(IconData icon, String title, String subtitle) {
+  // ✅ Updated to accept Icon Color
+  Widget _reportMenuItem(IconData icon, String title, String subtitle, Color iconColor) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFFF0FAF9),
+          color: iconColor.withOpacity(0.12), // ✅ Dynamic light background
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: primaryColor,
+          color: iconColor, // ✅ Dynamic vibrant color
           size: 22,
         ),
       ),
@@ -922,23 +886,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _profileSwitchItem(
-      IconData icon,
-      String title,
-      String subtitle,
-      bool value,
-      ValueChanged<bool> onChanged,
-      ) {
+  // ✅ Updated to accept Icon Color
+  Widget _profileSwitchItem(IconData icon, String title, String subtitle, bool value, ValueChanged<bool> onChanged, Color iconColor) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFFF0FAF9),
+          color: iconColor.withOpacity(0.12), // ✅ Dynamic light background
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: primaryColor,
+          color: iconColor, // ✅ Dynamic vibrant color
           size: 22,
         ),
       ),
@@ -1388,6 +1347,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const MobileRechargeScreen()),
+                      );
+                    } else if (services[index]['name'] == 'DTH') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DthRechargeScreen()),
                       );
                     }
                   },
@@ -1859,7 +1823,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
 }
 
 // =========================================================================
-// ✅ MOBILE RECHARGE SCREEN (Perfect Circular Logos, Normal Browse Plans)
+// ✅ MOBILE RECHARGE SCREEN (With Prepaid/Postpaid Toggle & Slider logic)
 // =========================================================================
 class MobileRechargeScreen extends StatefulWidget {
   const MobileRechargeScreen({super.key});
@@ -1876,71 +1840,80 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final FocusNode _phoneFocus = FocusNode();
-  final FocusNode _amountFocus = FocusNode();
+
+  bool isPrepaid = true;
+  int _currentOfferIndex = 0; // ✅ Slider के लिए
 
   final List<Map<String, dynamic>> operatorsList = [
-    {'name': 'Airtel', 'logo': 'https://logo.clearbit.com/airtel.in', 'color': Colors.red},
-    {'name': 'Jio', 'logo': 'https://logo.clearbit.com/jio.com', 'color': Colors.blue.shade700},
-    {'name': 'Vi', 'logo': 'https://logo.clearbit.com/myvi.in', 'color': Colors.redAccent},
-    {'name': 'BSNL', 'logo': 'https://logo.clearbit.com/bsnl.co.in', 'color': Colors.blueAccent},
+    {'name': 'Airtel', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Airtel_logo.png/512px-Airtel_logo.png', 'color': Colors.red},
+    {'name': 'Jio', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Reliance_Jio_Logo_%28October_2015%29.svg/512px-Reliance_Jio_Logo_%28October_2015%29.svg.png', 'color': Colors.blue.shade700},
+    {'name': 'Vi', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Vodafone_Idea_logo.svg/512px-Vodafone_Idea_logo.svg.png', 'color': Colors.redAccent},
+    {'name': 'BSNL', 'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/BSNL_logo.svg/512px-BSNL_logo.svg.png', 'color': Colors.blueAccent},
   ];
 
   final List<String> circlesList = ['Jharkhand', 'Bihar', 'Delhi', 'Mumbai', 'West Bengal', 'Assam', 'Odisha', 'UP East', 'UP West'];
 
-  String selectedOperator = 'Airtel';
-  String selectedCircle = 'Jharkhand';
-
   final List<Map<String, dynamic>> recentRecharges = [
-    {'name': 'Rahul Singh', 'number': '9876543210', 'operator': 'Jio', 'date': '2 days ago'},
-    {'name': 'Mom', 'number': '9123456789', 'operator': 'Airtel', 'date': '1 week ago'},
-    {'name': 'Shop WiFi', 'number': '9988776655', 'operator': 'Vi', 'date': '2 weeks ago'},
+    {'name': 'Rahul Singh', 'number': '9876543210', 'operator': 'Jio'},
+    {'name': 'Mom', 'number': '9123456789', 'operator': 'Airtel'},
+    {'name': 'Shop WiFi', 'number': '9988776655', 'operator': 'Vi'},
+    {'name': 'Papa', 'number': '9431000000', 'operator': 'Airtel'},
+    {'name': 'Amit', 'number': '9123412345', 'operator': 'Jio'},
+    {'name': 'Office', 'number': '9988001122', 'operator': 'Vi'},
+    {'name': 'Rakesh Bhai', 'number': '9898989898', 'operator': 'BSNL'},
   ];
 
   final List<String> quickAmounts = ['₹199', '₹299', '₹349', '₹666'];
+
+  // ✅ Postpaid Slider के लिए इमेजेस
+  final List<String> offerImages = [
+    'assets/images/bg1.png',
+    'https://img.freepik.com/premium-photo/digital-payment-technology-graphic_53876-113543.jpg',
+    'https://img.freepik.com/premium-photo/online-shopping-digital-marketing_53876-113539.jpg',
+    'https://img.freepik.com/premium-photo/mobile-banking-money-transfer_53876-113538.jpg'
+  ];
+
+  // ✅ Colorful Dots
+  final List<Color> dotColors = [
+    Colors.orange,
+    Colors.blue,
+    Colors.purple,
+    Colors.redAccent,
+    Colors.teal
+  ];
+
+  String selectedOperator = 'Airtel';
+  String selectedCircle = 'Jharkhand';
 
   @override
   void dispose() {
     _phoneController.dispose();
     _amountController.dispose();
     _phoneFocus.dispose();
-    _amountFocus.dispose();
     super.dispose();
   }
 
-  // ✅ लोगो अब 100% "गोल" (Circle) है (चौखुट नहीं)
   Widget _buildLogo(String name, String url, Color color, double size) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         color: Colors.white,
-        shape: BoxShape.circle, // <--- ये लो, पूरा गोल कर दिया
-        border: Border.all(color: Colors.grey.shade200, width: 1),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: ClipOval( // <--- इमेज भी पूरी गोल कटेगी
+      child: ClipOval(
         child: Padding(
           padding: const EdgeInsets.all(4.0),
           child: Image.network(
             url,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, // <--- बैकअप वाला भी गोल है
-                    gradient: LinearGradient(
-                      colors: [color.withOpacity(0.7), color],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                ),
-                child: Center(
-                  child: Text(
-                      name[0],
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: size * 0.45)
-                  ),
-                ),
-              );
-            },
+            errorBuilder: (c, e, s) => Center(
+              child: Text(
+                name[0],
+                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: size * 0.4),
+              ),
+            ),
           ),
         ),
       ),
@@ -1952,98 +1925,92 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     String tempOp = selectedOperator;
 
     showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setModalState) {
-                return Container(
-                  height: MediaQuery.of(context).size.height * 0.55,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.55,
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      height: 5, width: 50,
+                      decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 20),
+                  Row(
                     children: [
-                      Center(
-                        child: Container(
-                          height: 5, width: 50,
-                          decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)),
+                      if (step == 2)
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: () => setModalState(() => step = 1),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          if (step == 2)
-                            IconButton(
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              icon: const Icon(Icons.arrow_back),
-                              onPressed: () => setModalState(() => step = 1),
-                            ),
-                          if (step == 2) const SizedBox(width: 10),
-                          Text(
-                              step == 1 ? 'Select Operator' : 'Select Circle',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)
-                          ),
-                        ],
-                      ),
-                      const Divider(height: 20),
-
-                      Expanded(
-                        child: step == 1
-                            ? ListView.separated(
-                          itemCount: operatorsList.length,
-                          separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade200),
-                          itemBuilder: (context, index) {
-                            var op = operatorsList[index];
-                            return ListTile(
-                              contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                              leading: _buildLogo(op['name'], op['logo'], op['color'], 40),
-                              title: Text(op['name'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                              trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-                              onTap: () {
-                                setModalState(() {
-                                  tempOp = op['name'];
-                                  step = 2;
-                                });
-                              },
-                            );
-                          },
-                        )
-                            : ListView.separated(
-                          itemCount: circlesList.length,
-                          separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade200),
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(circlesList[index], style: const TextStyle(fontSize: 15)),
-                              onTap: () {
-                                setState(() {
-                                  selectedOperator = tempOp;
-                                  selectedCircle = circlesList[index];
-                                });
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
+                      if (step == 2) const SizedBox(width: 10),
+                      Text(
+                        step == 1 ? 'Select Operator' : 'Select Circle',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                );
-              }
-          );
-        }
+                  const Divider(),
+                  Expanded(
+                    child: step == 1
+                        ? ListView.separated(
+                      itemCount: operatorsList.length,
+                      separatorBuilder: (c, i) => const Divider(height: 1),
+                      itemBuilder: (c, i) {
+                        var op = operatorsList[i];
+                        return ListTile(
+                          leading: _buildLogo(op['name'], op['logo'], op['color'], 40),
+                          title: Text(op['name'], style: const TextStyle(fontWeight: FontWeight.w500)),
+                          trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                          onTap: () {
+                            setModalState(() {
+                              tempOp = op['name'];
+                              step = 2;
+                            });
+                          },
+                        );
+                      },
+                    )
+                        : ListView.separated(
+                      itemCount: circlesList.length,
+                      separatorBuilder: (c, i) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(circlesList[index]),
+                          onTap: () {
+                            setState(() {
+                              selectedOperator = tempOp;
+                              selectedCircle = circlesList[index];
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    var currentOpData = operatorsList.firstWhere((o) => o['name'] == selectedOperator, orElse: () => operatorsList[0]);
+    var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -2067,7 +2034,465 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 30, top: 20),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // ✅ Prepaid / Postpaid Custom Toggle
+                    Container(
+                      height: 45,
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isPrepaid = true;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                decoration: BoxDecoration(
+                                  color: isPrepaid ? Colors.white : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: isPrepaid ? [const BoxShadow(color: Colors.black12, blurRadius: 4)] : [],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Prepaid',
+                                    style: TextStyle(
+                                      color: isPrepaid ? primaryColor : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isPrepaid = false;
+                                });
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                decoration: BoxDecoration(
+                                  color: !isPrepaid ? Colors.white : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: !isPrepaid ? [const BoxShadow(color: Colors.black12, blurRadius: 4)] : [],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    'Postpaid',
+                                    style: TextStyle(
+                                      color: !isPrepaid ? primaryColor : Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+
+                    // ✅ Number Input Box
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black12, blurRadius: 10)
+                        ],
+                      ),
+                      child: TextField(
+                        controller: _phoneController,
+                        focusNode: _phoneFocus,
+                        keyboardType: TextInputType.number,
+                        maxLength: 10,
+                        style: const TextStyle(fontSize: 18),
+                        decoration: InputDecoration(
+                          counterText: '',
+                          hintText: 'Enter Your M.No',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w400, fontSize: 17),
+                          border: InputBorder.none,
+                          prefixIcon: const Icon(Icons.phone_android, color: Colors.grey),
+                          suffixIcon: Icon(Icons.contact_phone, color: primaryColor),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            _buildLogo(selectedOperator, opData['logo'], opData['color'], 45),
+                            const SizedBox(width: 12),
+                            Text(
+                              '$selectedOperator • $selectedCircle',
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: () => _showOperatorCircleBottomSheet(context),
+                          child: Text(
+                            'Change',
+                            style: TextStyle(color: accentColor, fontWeight: FontWeight.bold),
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(height: 25),
+
+                    // ✅ Smart Text Update based on Toggle
+                    Text(isPrepaid ? 'Recharge Amount' : 'Bill Amount', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.currency_rupee, color: Colors.black87),
+                        hintText: '0',
+                        suffixIcon: TextButton(
+                          onPressed: () {},
+                          // ✅ Smart Button Update
+                          child: Text(isPrepaid ? 'Browse Plans' : 'View Bill', style: TextStyle(color: primaryColor)),
+                        ),
+                        border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade300)),
+                        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
+                      ),
+                    ),
+
+                    // ✅ Quick Amounts only for Prepaid
+                    if (isPrepaid) ...[
+                      const SizedBox(height: 15),
+                      Wrap(
+                        spacing: 10,
+                        children: quickAmounts.map((a) => ActionChip(
+                          label: Text(a),
+                          backgroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFFE0E0E0)),
+                          onPressed: () => _amountController.text = a.replaceAll('₹', ''),
+                        )).toList(),
+                      ),
+                    ],
+
+                    const SizedBox(height: 30),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryColor,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        ),
+                        child: Text(
+                          // ✅ Smart Pay Button Update
+                          isPrepaid ? 'Proceed to Pay' : 'Pay Bill',
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // ✅ Smart Logic: Show Recent list if Prepaid, Show Slider if Postpaid
+                    if (isPrepaid) ...[
+                      const Text(
+                        'Recent Recharges',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 15),
+                      ...recentRecharges.map((recent) {
+                        var opD = operatorsList.firstWhere((o) => o['name'] == recent['operator']);
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: _buildLogo(recent['operator'], opD['logo'], opD['color'], 40),
+                          title: Text(recent['name'], style: const TextStyle(fontWeight: FontWeight.w500)),
+                          subtitle: Text('${recent['number']} • ${recent['operator']}', style: const TextStyle(fontSize: 12)),
+                          trailing: const Icon(Icons.chevron_right, size: 20),
+                          onTap: () {
+                            _phoneController.text = recent['number'];
+                            setState(() => selectedOperator = recent['operator']);
+                          },
+                        );
+                      }).toList(),
+                    ] else ...[
+                      // ✅ Postpaid Slider Logic
+                      Column(
+                        children: [
+                          CarouselSlider.builder(
+                            itemCount: offerImages.length,
+                            options: CarouselOptions(
+                                height: 100,
+                                viewportFraction: 1.0,
+                                enlargeCenterPage: false,
+                                autoPlay: true,
+                                autoPlayInterval: const Duration(seconds: 3),
+                                onPageChanged: (index, reason) {
+                                  setState(() {
+                                    _currentOfferIndex = index;
+                                  });
+                                }
+                            ),
+                            itemBuilder: (context, index, realIndex) {
+                              String imagePath = offerImages[index];
+                              return Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 2),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: imagePath.startsWith('http')
+                                      ? Image.network(
+                                    imagePath,
+                                    fit: BoxFit.fill,
+                                    width: double.infinity,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Center(child: Icon(Icons.image, color: Colors.grey)),
+                                    ),
+                                  )
+                                      : Image.asset(
+                                    imagePath,
+                                    fit: BoxFit.fill,
+                                    width: double.infinity,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Center(child: Icon(Icons.image, color: Colors.grey)),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: offerImages.asMap().entries.map((entry) {
+                              Color activeDotColor = dotColors[entry.key % dotColors.length];
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                width: _currentOfferIndex == entry.key ? 18.0 : 8.0,
+                                height: 8.0,
+                                margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: _currentOfferIndex == entry.key
+                                      ? activeDotColor
+                                      : Colors.grey.shade300,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =========================================================================
+// ✅ DTH RECHARGE SCREEN (With Fixed Operator Sheet)
+// =========================================================================
+class DthRechargeScreen extends StatefulWidget {
+  const DthRechargeScreen({super.key});
+
+  @override
+  State<DthRechargeScreen> createState() => _DthRechargeScreenState();
+}
+
+class _DthRechargeScreenState extends State<DthRechargeScreen> {
+  final Color primaryColor = const Color(0xFF009688);
+  final Color accentColor = const Color(0xFF67C949);
+  final Color bgColor = const Color(0xFFF5F6FA);
+
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final FocusNode _idFocus = FocusNode();
+
+  int _currentOfferIndex = 0;
+
+  // ✅ DTH Operators
+  final List<Map<String, dynamic>> operatorsList = [
+    {'name': 'Tata Play', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Tata_Play_2022_logo.svg/512px-Tata_Play_2022_logo.svg.png', 'color': Colors.purple},
+    {'name': 'Airtel Digital TV', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Airtel_logo.png/512px-Airtel_logo.png', 'color': Colors.red},
+    {'name': 'Dish TV', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Dish_TV_India_logo.svg/512px-Dish_TV_India_logo.svg.png', 'color': Colors.orange},
+    {'name': 'Sun Direct', 'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e6/Sun_Direct_logo.svg/512px-Sun_Direct_logo.svg.png', 'color': Colors.yellow.shade700},
+    {'name': 'Videocon D2H', 'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Videocon_d2h_Logo.svg/512px-Videocon_d2h_Logo.svg.png', 'color': Colors.green},
+  ];
+
+  // ✅ Slider Images List
+  final List<String> dthOfferImages = [
+    'assets/images/bg1.png',
+    'https://img.freepik.com/premium-photo/digital-payment-technology-graphic_53876-113543.jpg',
+    'https://img.freepik.com/premium-photo/online-shopping-digital-marketing_53876-113539.jpg',
+    'https://img.freepik.com/premium-photo/mobile-banking-money-transfer_53876-113538.jpg'
+  ];
+
+  // ✅ Colorful Dots List
+  final List<Color> dotColors = [
+    Colors.orange,
+    Colors.blue,
+    Colors.purple,
+    Colors.redAccent,
+    Colors.teal
+  ];
+
+  String selectedOperator = 'Tata Play';
+  final List<String> quickAmounts = ['₹200', '₹300', '₹500', '₹1000'];
+
+  @override
+  void dispose() {
+    _idController.dispose();
+    _amountController.dispose();
+    _idFocus.dispose();
+    super.dispose();
+  }
+
+  Widget _buildLogo(String name, String url, Color color, double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: ClipOval(
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Image.network(
+            url,
+            fit: BoxFit.contain,
+            errorBuilder: (c, e, s) => Center(
+              child: Text(
+                name[0],
+                style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: size * 0.4),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ✅ Fixed _showOperatorSheet just like MobileRechargeScreen
+  void _showOperatorSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.55,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  height: 5, width: 50,
+                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text('Select DTH Operator', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Divider(),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: operatorsList.length,
+                  separatorBuilder: (c, i) => const Divider(height: 1),
+                  itemBuilder: (c, i) {
+                    var op = operatorsList[i];
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                      leading: _buildLogo(op['name'], op['logo'], op['color'], 40),
+                      title: Text(op['name'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                      onTap: () {
+                        setState(() => selectedOperator = op['name']);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        backgroundColor: bgColor,
+        appBar: AppBar(
+          backgroundColor: primaryColor,
+          elevation: 0,
+          title: const Text(
+            'DTH Recharge',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
                 decoration: BoxDecoration(
                   color: primaryColor,
                   borderRadius: const BorderRadius.only(
@@ -2077,27 +2502,26 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                 ),
                 child: Container(
                   decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: const [
-                        BoxShadow(color: Colors.black12, blurRadius: 10)
-                      ]
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black12, blurRadius: 10)
+                    ],
                   ),
                   child: TextField(
-                    controller: _phoneController,
-                    focusNode: _phoneFocus,
-                    keyboardType: TextInputType.number,
-                    enableSuggestions: false,
-                    autocorrect: false,
-                    style: const TextStyle(fontSize: 16),
+                    controller: _idController,
+                    focusNode: _idFocus,
+                    keyboardType: TextInputType.text,
+                    maxLength: 20,
+                    style: const TextStyle(fontSize: 18),
                     decoration: InputDecoration(
-                      hintText: 'Enter Your M.No',
-                      hintStyle: TextStyle(color: Colors.grey.shade400),
-                      prefixIcon: const Icon(Icons.phone_android, color: Colors.grey),
-                      suffixIcon: Icon(Icons.contact_phone, color: primaryColor),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-                      filled: true,
-                      fillColor: Colors.white,
+                      counterText: '',
+                      hintText: 'Enter Subscriber ID / VC No.',
+                      hintStyle: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w400, fontSize: 17),
+                      border: InputBorder.none,
+                      prefixIcon: const Icon(Icons.tv, color: Colors.grey),
+                      suffixIcon: Icon(Icons.contact_mail, color: primaryColor),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
                 ),
@@ -2113,35 +2537,37 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       children: [
                         Row(
                           children: [
-                            // ✅ अब लोगो एकदम गोल (Circle) शेप में दिखेगा
-                            _buildLogo(selectedOperator, currentOpData['logo'], currentOpData['color'], 45),
+                            _buildLogo(selectedOperator, opData['logo'], opData['color'], 45),
                             const SizedBox(width: 12),
-                            Text('$selectedOperator • $selectedCircle', style: const TextStyle(fontSize: 15)),
+                            Text(
+                              selectedOperator,
+                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                            ),
                           ],
                         ),
                         TextButton(
-                          onPressed: () => _showOperatorCircleBottomSheet(context),
-                          child: Text('Change', style: TextStyle(color: accentColor, fontWeight: FontWeight.bold)),
+                          onPressed: () => _showOperatorSheet(context),
+                          child: Text(
+                            'Change',
+                            style: TextStyle(color: accentColor, fontWeight: FontWeight.bold),
+                          ),
                         )
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 25),
 
                     const Text('Recharge Amount', style: TextStyle(color: Colors.grey, fontSize: 13)),
                     const SizedBox(height: 8),
-
                     TextField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
-                      // ✅ अमाउंट का टेक्स्ट हल्का बोल्ड (w600) है
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.currency_rupee, color: Colors.black87),
                         hintText: '0',
                         suffixIcon: TextButton(
-                          onPressed: (){},
-                          // ✅ Browse Plans एकदम नॉर्मल फोंट में (बिना Bold)
-                          child: Text('Browse Plans', style: TextStyle(color: primaryColor)),
+                          onPressed: () {},
+                          child: Text('Customer Info', style: TextStyle(color: primaryColor)),
                         ),
                         border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade300)),
                         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: primaryColor, width: 2)),
@@ -2151,63 +2577,105 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
                     Wrap(
                       spacing: 10,
-                      children: quickAmounts.map((amount) => ActionChip(
-                        label: Text(amount, style: const TextStyle(color: Colors.black87)),
+                      children: quickAmounts.map((a) => ActionChip(
+                        label: Text(a),
                         backgroundColor: Colors.white,
-                        side: BorderSide(color: Colors.grey.shade200),
-                        onPressed: () {
-                          _amountController.text = amount.replaceAll('₹', '');
-                        },
+                        side: const BorderSide(color: Color(0xFFE0E0E0)),
+                        onPressed: () => _amountController.text = a.replaceAll('₹', ''),
                       )).toList(),
                     ),
-
                     const SizedBox(height: 30),
 
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
+                        onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         ),
-                        onPressed: () {},
-                        child: const Text('Proceed to Pay', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'Proceed to Pay',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
 
                     const SizedBox(height: 40),
 
-                    const Text(
-                      'Recent Recharges',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 15),
-
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: recentRecharges.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        var recent = recentRecharges[index];
-                        var opData = operatorsList.firstWhere((o) => o['name'] == recent['operator'], orElse: () => operatorsList[0]);
-
-                        return ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: _buildLogo(recent['operator'], opData['logo'], opData['color'], 40),
-                          title: Text(recent['name'], style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                          subtitle: Text('${recent['number']} • ${recent['operator']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                          trailing: const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
-                          onTap: () {
-                            _phoneController.text = recent['number'];
-                            setState(() {
-                              selectedOperator = recent['operator'];
-                            });
+                    Column(
+                      children: [
+                        CarouselSlider.builder(
+                          itemCount: dthOfferImages.length,
+                          options: CarouselOptions(
+                              height: 100,
+                              viewportFraction: 1.0,
+                              enlargeCenterPage: false,
+                              autoPlay: true,
+                              autoPlayInterval: const Duration(seconds: 3),
+                              onPageChanged: (index, reason) {
+                                setState(() {
+                                  _currentOfferIndex = index;
+                                });
+                              }
+                          ),
+                          itemBuilder: (context, index, realIndex) {
+                            String imagePath = dthOfferImages[index];
+                            return Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 2),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: imagePath.startsWith('http')
+                                    ? Image.network(
+                                  imagePath,
+                                  fit: BoxFit.fill,
+                                  width: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Center(child: Icon(Icons.image, color: Colors.grey)),
+                                  ),
+                                )
+                                    : Image.asset(
+                                  imagePath,
+                                  fit: BoxFit.fill,
+                                  width: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Center(child: Icon(Icons.image, color: Colors.grey)),
+                                  ),
+                                ),
+                              ),
+                            );
                           },
-                        );
-                      },
-                    )
+                        ),
+                        const SizedBox(height: 12),
+                        // ✅ Colorful Slide Dots Indicator
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: dthOfferImages.asMap().entries.map((entry) {
+                            Color activeDotColor = dotColors[entry.key % dotColors.length];
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: _currentOfferIndex == entry.key ? 18.0 : 8.0,
+                              height: 8.0,
+                              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                color: _currentOfferIndex == entry.key
+                                    ? activeDotColor
+                                    : Colors.grey.shade300,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               )
