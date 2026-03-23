@@ -3,12 +3,12 @@ import 'app_colors.dart';
 
 class TransactionHistoryScreen extends StatefulWidget {
   final String pageTitle;
-  final bool isB2B; // ✅ B2B aur B2C ko alag karne ka switch
+  final bool isB2B;
 
   const TransactionHistoryScreen({
     super.key,
     required this.pageTitle,
-    this.isB2B = false, // Default B2C rahega
+    this.isB2B = false,
   });
 
   @override
@@ -16,7 +16,7 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  String _selectedDate = '7 Days';
+  String _selectedDate = 'Last 7 Days';
   String _selectedCategory = 'All';
   String _selectedPaymentType = 'All';
   String _selectedStatus = 'All';
@@ -49,7 +49,44 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     },
   ];
 
+  Widget _filterChip(String label, bool isSelected, VoidCallback onTap, {IconData? icon}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : Colors.grey.shade300,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 14, color: isSelected ? AppColors.primaryColor : Colors.grey.shade500),
+              const SizedBox(width: 6),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? AppColors.primaryColor : Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showFilterBottomSheet(BuildContext context) {
+    const List<String> months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -57,83 +94,164 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
         builder: (BuildContext context) {
           return StatefulBuilder(
               builder: (BuildContext context, StateSetter setModalState) {
+
+                // ✅ चेक करो कि कोई कस्टम डेट सेलेक्टेड है या नहीं
+                bool isCustomDate = _selectedDate != 'Today' &&
+                    _selectedDate != 'Yesterday' &&
+                    _selectedDate != 'Last 7 Days' &&
+                    _selectedDate != 'This Month';
+
                 return Container(
-                  padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 30),
-                  decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
+                  padding: const EdgeInsets.only(top: 24, left: 20, right: 20, bottom: 30),
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24))
+                  ),
                   child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(child: Container(height: 5, width: 50, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)))),
-                        const SizedBox(height: 20),
-                        const Text('Filter Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        const Divider(height: 30),
-
-                        const Text('Date Range', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8, runSpacing: 8,
-                          children: ['Today', 'Yesterday', '7 Days', '1 Month', '3 Months', '1 Year'].map((date) {
-                            return ChoiceChip(
-                              label: Text(date), selected: _selectedDate == date, selectedColor: AppColors.accentColor,
-                              labelStyle: TextStyle(color: _selectedDate == date ? Colors.white : Colors.black87, fontWeight: _selectedDate == date ? FontWeight.bold : FontWeight.normal),
-                              onSelected: (bool selected) { if (selected) setModalState(() => _selectedDate = date); },
-                            );
-                          }).toList(),
+                        // HEADER
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Filter Reports', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                            InkWell(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
+                                child: const Icon(Icons.close, size: 18, color: Colors.black87),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
 
-                        const Text('Service Category', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                        const SizedBox(height: 10),
+                        // DATE RANGE
+                        const Text('Date Range', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 12),
                         Wrap(
-                          spacing: 8, runSpacing: 8,
+                          spacing: 10, runSpacing: 10,
+                          children: [
+                            _filterChip('Today', _selectedDate == 'Today', () => setModalState(() => _selectedDate = 'Today')),
+                            _filterChip('Yesterday', _selectedDate == 'Yesterday', () => setModalState(() => _selectedDate = 'Yesterday')),
+                            _filterChip('Last 7 Days', _selectedDate == 'Last 7 Days', () => setModalState(() => _selectedDate = 'Last 7 Days')),
+                            _filterChip('This Month', _selectedDate == 'This Month', () => setModalState(() => _selectedDate = 'This Month')),
+
+                            // ✅ FIX: Custom Date Logic Back in Action!
+                            _filterChip(
+                                isCustomDate ? _selectedDate : 'Custom Date',
+                                isCustomDate,
+                                    () async {
+                                  DateTimeRange? picked = await showDateRangePicker(
+                                      context: context,
+                                      firstDate: DateTime(2020),
+                                      lastDate: DateTime.now(),
+                                      builder: (context, child) {
+                                        return Theme(
+                                          data: Theme.of(context).copyWith(
+                                            colorScheme: const ColorScheme.light(
+                                              primary: AppColors.primaryColor,
+                                              onPrimary: Colors.white,
+                                              onSurface: Colors.black,
+                                            ),
+                                          ),
+                                          child: child!,
+                                        );
+                                      }
+                                  );
+
+                                  if (picked != null) {
+                                    String start = "${picked.start.day} ${months[picked.start.month - 1]}";
+                                    String end = "${picked.end.day} ${months[picked.end.month - 1]}";
+                                    setModalState(() {
+                                      _selectedDate = "$start - $end";
+                                    });
+                                  }
+                                },
+                                icon: Icons.calendar_today
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // TRANSACTION STATUS
+                        const Text('Transaction Status', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 10, runSpacing: 10,
+                          children: [
+                            _filterChip('All', _selectedStatus == 'All', () => setModalState(() => _selectedStatus = 'All')),
+                            _filterChip('Success', _selectedStatus == 'Success', () => setModalState(() => _selectedStatus = 'Success')),
+                            _filterChip('Pending', _selectedStatus == 'Pending', () => setModalState(() => _selectedStatus = 'Pending')),
+                            _filterChip('Failed', _selectedStatus == 'Failed', () => setModalState(() => _selectedStatus = 'Failed')),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // SERVICE CATEGORY
+                        const Text('Service Category', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 10, runSpacing: 10,
                           children: ['All', 'AEPS', 'Recharge', 'DMT', 'Electricity', 'Water'].map((category) {
-                            return ChoiceChip(
-                              label: Text(category), selected: _selectedCategory == category, selectedColor: AppColors.accentColor,
-                              labelStyle: TextStyle(color: _selectedCategory == category ? Colors.white : Colors.black87, fontWeight: _selectedCategory == category ? FontWeight.bold : FontWeight.normal),
-                              onSelected: (bool selected) { if (selected) setModalState(() => _selectedCategory = category); },
-                            );
+                            return _filterChip(category, _selectedCategory == category, () => setModalState(() => _selectedCategory = category));
                           }).toList(),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
 
-                        const Text('Payment Type', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                        const SizedBox(height: 10),
+                        // PAYMENT TYPE
+                        const Text('Payment Type', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        const SizedBox(height: 12),
                         Wrap(
-                          spacing: 8, runSpacing: 8,
+                          spacing: 10, runSpacing: 10,
                           children: ['All', 'Payment', 'Received'].map((type) {
-                            return ChoiceChip(
-                              label: Text(type), selected: _selectedPaymentType == type, selectedColor: AppColors.accentColor,
-                              labelStyle: TextStyle(color: _selectedPaymentType == type ? Colors.white : Colors.black87, fontWeight: _selectedPaymentType == type ? FontWeight.bold : FontWeight.normal),
-                              onSelected: (bool selected) { if (selected) setModalState(() => _selectedPaymentType = type); },
-                            );
+                            return _filterChip(type, _selectedPaymentType == type, () => setModalState(() => _selectedPaymentType = type));
                           }).toList(),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 32),
 
-                        const Text('Status', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8, runSpacing: 8,
-                          children: ['All', 'Success', 'Failed', 'Pending'].map((status) {
-                            return ChoiceChip(
-                              label: Text(status), selected: _selectedStatus == status, selectedColor: AppColors.accentColor,
-                              labelStyle: TextStyle(color: _selectedStatus == status ? Colors.white : Colors.black87, fontWeight: _selectedStatus == status ? FontWeight.bold : FontWeight.normal),
-                              onSelected: (bool selected) { if (selected) setModalState(() => _selectedStatus = status); },
-                            );
-                          }).toList(),
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        SizedBox(
-                          width: double.infinity, height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15))),
-                            onPressed: () { setState(() {}); Navigator.pop(context); },
-                            child: const Text('Apply Filters', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                          ),
+                        // ACTION BUTTONS
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  setModalState(() {
+                                    _selectedDate = 'Last 7 Days';
+                                    _selectedCategory = 'All';
+                                    _selectedPaymentType = 'All';
+                                    _selectedStatus = 'All';
+                                  });
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(color: AppColors.primaryColor, width: 1.5),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Clear', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.primaryColor)),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {});
+                                  Navigator.pop(context);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  backgroundColor: AppColors.primaryColor,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: const Text('Apply Filter', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
+                              ),
+                            ),
+                          ],
                         )
                       ],
                     ),
@@ -169,8 +287,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
             ),
             child: widget.isB2B
-
-            // ✅ B2B WALA CARD (Retailer ke liye)
+            // ✅ B2B WALA CARD
                 ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]),
@@ -197,12 +314,11 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 ],
               ),
             )
-
-            // ✅ B2C WALA CARD (New Premium White Design)
+            // ✅ B2C WALA CARD
                 : Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               decoration: BoxDecoration(
-                  color: Colors.white, // सफ़ेद बैकग्राउंड
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 15, offset: const Offset(0, 5))
@@ -215,7 +331,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(children: [
-                        Icon(Icons.stars_rounded, size: 18, color: Colors.orange.shade500), // गोल्डन आइकॉन
+                        Icon(Icons.stars_rounded, size: 18, color: Colors.orange.shade500),
                         const SizedBox(width: 6),
                         Text('Lifetime Cashback Won', style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w600))
                       ]),
@@ -227,7 +343,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                            colors: [Color(0xFFFFD700), Color(0xFFFF8C00)], // खूबसूरत गोल्डन-ऑरेंज ग्रेडिएंट
+                            colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight
                         ),
@@ -266,6 +382,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
           // ================= DETAILED TRANSACTION LIST =================
           Expanded(
             child: ListView.builder(
+              physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 40, top: 5),
               itemCount: _transactions.length,
               itemBuilder: (context, index) {
@@ -322,7 +439,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                     child: Text('Comm: ${txn['commission']}', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green.shade700)),
                                   ),
 
-                                // ✅ B2C Cashback Badge (Customer ko khush karne ke liye)
+                                // ✅ B2C Cashback Badge
                                 if (!widget.isB2B && !isFailed && txn['cashback'] != null)
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

@@ -1,316 +1,347 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
-import 'transaction_history_screen.dart'; // ✅ स्क्रीन इम्पोर्ट कर ली
 
 class WalletScreen extends StatefulWidget {
   final double topPadding;
   final VoidCallback onGoToReports;
 
-  const WalletScreen({super.key, required this.topPadding, required this.onGoToReports});
+  const WalletScreen({
+    super.key,
+    required this.topPadding,
+    required this.onGoToReports
+  });
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
 class _WalletScreenState extends State<WalletScreen> {
-  bool _showDetailedReport = false;
+  bool isB2B = false;
+  bool _isLoading = true;
 
-  final List<Map<String, dynamic>> _commissionBreakdown = [
-    {'service': 'AEPS Withdrawal', 'icon': Icons.fingerprint, 'color': Colors.teal, 'business': '₹ 10,200', 'commission': 180.50},
-    {'service': 'Mobile Recharge', 'icon': Icons.phone_android, 'color': Colors.blue, 'business': '₹ 3,500', 'commission': 45.00},
-    {'service': 'Money Transfer (DMT)', 'icon': Icons.sync_alt, 'color': Colors.indigo, 'business': '₹ 1,500', 'commission': 15.00},
-    {'service': 'DTH Recharge', 'icon': Icons.tv, 'color': Colors.orange, 'business': '₹ 250', 'commission': 5.00},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadWalletData();
+  }
+
+  Future<void> _loadWalletData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    if (mounted) {
+      setState(() {
+        isB2B = prefs.getBool('isB2B') ?? false;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.only(top: widget.topPadding + 20, left: 16, right: 16, bottom: 40),
+      // ✅ FIX YAHAN HAI: BouncingScrollPhysics हटाकर ClampingScrollPhysics लगा दिया है
+      // अब पेज रबर की तरह नहीं खिंचेगा, एकदम सॉलिड रुकेगा!
+      physics: const ClampingScrollPhysics(),
+      padding: EdgeInsets.only(
+        top: widget.topPadding + 20,
+        left: 20, right: 20, bottom: 40,
+      ),
+      child: AnimatedOpacity(
+        opacity: _isLoading ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ================= 1. WALLET CARDS =================
+            if (isB2B)
+              _buildB2BWalletCards()
+            else
+              _buildB2CWalletCard(),
+
+            const SizedBox(height: 30),
+
+            // ================= 2. WALLET SERVICES =================
+            const Text(
+                'Wallet Services',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: 0.5)
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _serviceButton(Icons.history, 'Passbook', Colors.blueGrey),
+                _serviceButton(Icons.qr_code_scanner, 'Scan & Pay', Colors.orange),
+                _serviceButton(Icons.account_balance, 'Bank Links', Colors.indigo),
+                _serviceButton(Icons.support_agent, 'Support', Colors.green),
+              ],
+            ),
+
+            const SizedBox(height: 32),
+
+            // ================= 3. RECENT TRANSACTIONS =================
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                    'Recent Transactions',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: 0.5)
+                ),
+                InkWell(
+                  onTap: widget.onGoToReports,
+                  borderRadius: BorderRadius.circular(4),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4.0),
+                    child: Text('View All', style: TextStyle(color: AppColors.primaryColor, fontSize: 13, fontWeight: FontWeight.w600)),
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            _transactionTile(Icons.account_balance_wallet, 'Money Added', '23 Mar, 10:30 AM', '+ ₹500.00', Colors.green),
+            _transactionTile(Icons.phone_android, 'Jio Recharge', '22 Mar, 04:15 PM', '- ₹299.00', Colors.red),
+            if (isB2B) _transactionTile(Icons.account_balance, 'Bank Settlement', '21 Mar, 09:00 AM', '- ₹5,000.00', Colors.blue),
+            if (isB2B) _transactionTile(Icons.fingerprint, 'AEPS Withdrawal', '21 Mar, 08:45 AM', '+ ₹1,500.00', Colors.green),
+            if (isB2B) _transactionTile(Icons.percent, 'Commission Earned', '21 Mar, 08:45 AM', '+ ₹15.00', Colors.orange),
+
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ================= B2C WALLET DESIGN (User) =================
+  Widget _buildB2CWalletCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF1E3C72), Color(0xFF2A5298)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: const Color(0xFF2A5298).withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 8))],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. MAIN WALLET CARD
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppColors.primaryColor, AppColors.deepMenuColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(color: AppColors.primaryColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))
-              ],
-            ),
+          Padding(
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Main Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                    // ✅ वॉलेट आइकॉन पर क्लिक करने से भी लेजर खुल जाएगा
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const TransactionHistoryScreen(pageTitle: 'Main Wallet Ledger', isB2B: true)));
-                      },
-                      child: const Icon(Icons.account_balance_wallet, color: AppColors.accentColor, size: 24),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Text('₹ 45,230.50', style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.add_circle, color: Colors.white, size: 18),
-                        label: const Text('Add Money', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.send, color: Colors.white, size: 18),
-                        label: const Text('Send Money', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white54),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // 2. AEPS WALLET CARD
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('AEPS Wallet Balance', style: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.w600)),
+                    const Text('Available Balance', style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(6)),
-                      child: Text('Withdrawable', style: TextStyle(color: Colors.orange.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
+                      child: const Text('Personal Wallet', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                     )
                   ],
                 ),
-                const SizedBox(height: 8),
-                const Text('₹ 12,500.00', style: TextStyle(color: Colors.black87, fontSize: 27, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.account_balance, color: Colors.white, size: 18),
-                        label: const Text('Bank Settle', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade600,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.sync_alt, color: AppColors.primaryColor, size: 18),
-                        label: const Text('Move to Main', style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor.withOpacity(0.1),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                )
+                const SizedBox(height: 12),
+                const Text('₹ 1,250.00', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, letterSpacing: 1)),
               ],
             ),
           ),
-
-          const SizedBox(height: 25),
-
-          // 3. TODAY'S EARNINGS
-          const Padding(
-            padding: EdgeInsets.only(left: 4, bottom: 12),
-            child: Text('Today\'s Performance', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-          ),
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.accentColor.withOpacity(0.5), width: 1.5),
-              boxShadow: [BoxShadow(color: AppColors.accentColor.withOpacity(0.1), blurRadius: 10)],
-            ),
-            child: Column(
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.15), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24))),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: AppColors.accentColor.withOpacity(0.2), shape: BoxShape.circle),
-                      child: const Icon(Icons.insights, color: AppColors.primaryColor, size: 28),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Total Commission Earned', style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w500)),
-                        Text('₹ 245.50', style: TextStyle(color: AppColors.primaryColor, fontSize: 24, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ],
-                ),
-                const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Total Business', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                        Text('₹ 15,450.00', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
-                      ],
-                    ),
-                    Container(height: 30, width: 1, color: Colors.grey.shade200),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        const Text('Net Profit', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                        Text('₹ 233.25', style: TextStyle(color: Colors.green.shade600, fontWeight: FontWeight.bold, fontSize: 14)),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                Expanded(child: _cardActionButton(Icons.add_circle, 'Add Money')),
+                Container(width: 1, height: 30, color: Colors.white24),
+                Expanded(child: _cardActionButton(Icons.send, 'Send Money')),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
 
-                SizedBox(
-                  width: double.infinity,
-                  child: TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _showDetailedReport = !_showDetailedReport;
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.grey.shade50,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+  // ================= B2B WALLET DESIGN (Retailer) =================
+  Widget _buildB2BWalletCards() {
+    return Column(
+      children: [
+        // 1. MAIN WALLET
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [AppColors.primaryColor, Color(0xFF26A69A)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: AppColors.primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          _showDetailedReport ? 'Hide Detailed Reports' : 'View Detailed Reports',
-                          style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          _showDetailedReport ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                          color: AppColors.primaryColor,
-                          size: 20,
+                        const Text('Main Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(20)),
+                          child: const Text('For Recharges & Bills', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                         )
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    const Text('₹ 4,500.00', style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.bold)),
+                  ],
                 ),
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.12), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
+                    SizedBox(width: 8),
+                    Text('ADD MONEY TO MAIN WALLET', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
 
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  // बटन के लिए हाइट बढ़ा दी है
-                  height: _showDetailedReport ? (_commissionBreakdown.length * 75).toDouble() + 70 : 0,
-                  child: SingleChildScrollView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    child: Column(
+        // 2. AEPS / TRADE WALLET
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [Color(0xFF333333), Color(0xFF1A1A1A)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 5))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Padding(padding: EdgeInsets.only(top: 15, bottom: 8), child: Divider()),
-                        ..._commissionBreakdown.map((data) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Row(
-                              children: [
-                                Container(
-                                  height: 40, width: 40,
-                                  decoration: BoxDecoration(color: data['color'].withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                                  child: Icon(data['icon'], color: data['color'], size: 20),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(data['service'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.black87)),
-                                      const SizedBox(height: 2),
-                                      Text('Vol: ${data['business']}', style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                                    ],
-                                  ),
-                                ),
-                                Text('+ ₹${data['commission'].toStringAsFixed(2)}', style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold, fontSize: 14)),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-
-                        // ✅ जादुई बटन: Full Commission Report खोलने के लिए
-                        if (_showDetailedReport)
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const TransactionHistoryScreen(
-                                      pageTitle: 'Commission Report',
-                                      isB2B: true,
-                                    ),
-                                  ),
-                                );
-                              },
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: AppColors.primaryColor),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                              child: const Text('View Full Commission Report', style: TextStyle(color: AppColors.primaryColor)),
-                            ),
-                          )
+                        const Text('AEPS / Trade Wallet', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(color: AppColors.accentColor.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+                          child: const Text('Settlement Balance', style: TextStyle(color: AppColors.accentColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                        )
                       ],
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    const Text('₹ 12,850.50', style: TextStyle(color: AppColors.accentColor, fontSize: 29, fontWeight: FontWeight.bold)),
+                  ],
                 ),
+              ),
+              Container(
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
+                child: Row(
+                  children: [
+                    Expanded(child: _cardActionButton(Icons.account_balance, 'Move to Bank', textColor: AppColors.accentColor)),
+                    Container(width: 1, height: 30, color: Colors.white24),
+                    Expanded(child: _cardActionButton(Icons.swap_horiz, 'Move to Main', textColor: Colors.white)),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ================= COMMON UI HELPERS =================
+  Widget _cardActionButton(IconData icon, String label, {Color textColor = Colors.white}) {
+    return InkWell(
+      onTap: () {},
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: textColor, size: 18),
+            const SizedBox(width: 6),
+            Text(label, style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _serviceButton(IconData icon, String label, Color color) {
+    return GestureDetector(
+      onTap: () {},
+      child: SizedBox(
+        width: 70,
+        child: Column(
+          children: [
+            Container(
+              height: 48, width: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.2), width: 1),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87, height: 1.2),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _transactionTile(IconData icon, String title, String date, String amount, Color amountColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: Row(
+        children: [
+          Container(
+            height: 40, width: 40,
+            decoration: BoxDecoration(color: amountColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            child: Icon(icon, color: amountColor, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, color: Colors.black87)),
+                const SizedBox(height: 3),
+                Text(date, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
+          Text(
+            amount,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: amountColor),
+          )
         ],
       ),
     );
