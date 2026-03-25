@@ -16,52 +16,78 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
 
   late TabController _tabController;
   String _selectedDate = 'Last 7 Days';
+  DateTimeRange? _customDateRange;
 
   final List<Map<String, dynamic>> _rechargeData = [
     {
-      'txnId': 'TXN1001', 'biller': 'Jio Prepaid',
-      'number': '+91 98765 43210', 'date': 'Today, 11:15 AM',
-      'amount': 500.00, 'opRef': 'JIO123456789',
-      'commission': 12.50, 'cashback': 25.00,
-      'icon': Icons.phone_android,
-      'iconBg': Color(0xFF4A90D9),
-      'status': 'Success', 'type': 'Prepaid',
+      'txnId': 'TXN1001',
+      'biller': 'Jio Prepaid',
+      'number': '+91 98765 43210',
+      'date': '25 Mar 2026, 11:15 AM',
+      'amount': 500.00,
+      'opRef': 'JIO123456789',
+      'commission': 12.50,
+      'cashback': 25.00,
+      'opLogoText': 'J',
+      'iconBg': const Color(0xFF4A90D9),
+      'status': 'Success',
+      'type': 'Prepaid',
     },
     {
-      'txnId': 'TXN1002', 'biller': 'Electricity Bill',
-      'number': 'CA: 9087654321', 'date': 'Yesterday, 9:00 PM',
-      'amount': 1300.00, 'opRef': 'UPPCL987654',
-      'commission': 2.00, 'cashback': null,
-      'icon': Icons.lightbulb_rounded,
-      'iconBg': Color(0xFFF5A623),
-      'status': 'Pending', 'type': 'Electricity',
+      'txnId': 'TXN1002',
+      'biller': 'Electricity Bill',
+      'number': 'CA: 9087654321',
+      'date': '24 Mar 2026, 9:00 PM',
+      'amount': 1300.00,
+      'opRef': 'UPPCL987654',
+      'commission': 2.00,
+      'cashback': null,
+      'opLogoText': 'E',
+      'iconBg': const Color(0xFFF5A623),
+      'status': 'Pending',
+      'type': 'Electricity',
     },
     {
-      'txnId': 'TXN1003', 'biller': 'Tata Sky DTH',
-      'number': 'Sub ID: 8765432109', 'date': '22 Apr, 1:10 PM',
-      'amount': 200.00, 'opRef': 'DTH1122334',
-      'commission': 5.50, 'cashback': null,
-      'icon': Icons.tv_rounded,
-      'iconBg': Color(0xFF9B59B6),
-      'status': 'Failed', 'type': 'DTH',
+      'txnId': 'TXN1003',
+      'biller': 'Tata Sky DTH',
+      'number': 'Sub ID: 8765432109',
+      'date': '22 Mar 2026, 1:10 PM',
+      'amount': 200.00,
+      'opRef': 'DTH1122334',
+      'commission': 5.50,
+      'cashback': null,
+      'opLogoText': 'T',
+      'iconBg': const Color(0xFF9B59B6),
+      'status': 'Failed',
+      'type': 'DTH',
     },
     {
-      'txnId': 'TXN1004', 'biller': 'Airtel Postpaid',
-      'number': '+91 99887 76655', 'date': '21 Apr, 4:45 PM',
-      'amount': 749.00, 'opRef': 'AIRTEL998877',
-      'commission': 10.00, 'cashback': null,
-      'icon': Icons.signal_cellular_alt_rounded,
-      'iconBg': Color(0xFFE74C3C),
-      'status': 'Success', 'type': 'Postpaid',
+      'txnId': 'TXN1004',
+      'biller': 'Airtel Postpaid',
+      'number': '+91 99887 76655',
+      'date': '21 Mar 2026, 4:45 PM',
+      'amount': 749.00,
+      'opRef': 'AIRTEL998877',
+      'commission': 10.00,
+      'cashback': null,
+      'opLogoText': 'A',
+      'iconBg': const Color(0xFFE74C3C),
+      'status': 'Success',
+      'type': 'Postpaid',
     },
     {
-      'txnId': 'TXN1005', 'biller': 'Gas Cylinder',
-      'number': 'ID: 1234567890', 'date': '20 Apr, 2:30 PM',
-      'amount': 950.00, 'opRef': 'GAS567890',
-      'commission': 8.00, 'cashback': null,
-      'icon': Icons.local_fire_department_rounded,
-      'iconBg': Color(0xFF27AE60),
-      'status': 'Success', 'type': 'Gas',
+      'txnId': 'TXN1005',
+      'biller': 'Gas Cylinder',
+      'number': 'ID: 1234567890',
+      'date': '20 Mar 2026, 2:30 PM',
+      'amount': 950.00,
+      'opRef': 'GAS567890',
+      'commission': 8.00,
+      'cashback': null,
+      'opLogoText': 'G',
+      'iconBg': const Color(0xFF27AE60),
+      'status': 'Success',
+      'type': 'Gas',
     },
   ];
 
@@ -75,13 +101,11 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
   Map<String, String> _getStats(String? status) {
     final list = _getFilteredList(status);
 
-    double totalAmount =
-    list.fold(0, (sum, t) => sum + (t['amount'] as double));
+    double totalAmount = list.fold(0, (sum, t) => sum + (t['amount'] as double));
     int totalTxns = list.length;
 
     double totalEarning = 0;
     for (var t in list) {
-      // ✅ Sirf Success pe commission/cashback
       if (t['status'] == 'Success') {
         if (widget.isB2B) {
           totalEarning += (t['commission'] as double? ?? 0);
@@ -149,7 +173,9 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
         backgroundColor: const Color(0xFFF5F7FA),
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [
-            SliverToBoxAdapter(child: _buildHeader(statusBarH)),
+            SliverToBoxAdapter(
+              child: _buildHeader(statusBarH),
+            ),
           ],
           body: Column(
             children: [
@@ -189,17 +215,23 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
             child: Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 20),
+                  icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                      size: 20
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
                 const Expanded(
-                  child: Text('Recharge & BBPS History',
+                  child: Text(
+                      'Recharge & BBPS History',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.w700)),
+                          fontWeight: FontWeight.w700
+                      )
+                  ),
                 ),
                 IconButton(
                   icon: Container(
@@ -208,8 +240,11 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                       color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.tune_rounded,
-                        color: Colors.white, size: 18),
+                    child: const Icon(
+                        Icons.tune_rounded,
+                        color: Colors.white,
+                        size: 18
+                    ),
                   ),
                   onPressed: () => _showFilterSheet(context),
                 ),
@@ -228,8 +263,46 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                 'Last 7 Days', 'This Month', 'Custom'
               ].map((d) {
                 final bool sel = _selectedDate == d;
+
+                String displayText = d;
+                if (d == 'Custom' && sel && _customDateRange != null) {
+                  final start = _customDateRange!.start;
+                  final end = _customDateRange!.end;
+                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                  displayText = '${start.day} ${months[start.month - 1]} - ${end.day} ${months[end.month - 1]}';
+                }
+
                 return GestureDetector(
-                  onTap: () => setState(() => _selectedDate = d),
+                  onTap: () async {
+                    if (d == 'Custom') {
+                      final DateTimeRange? picked = await showDateRangePicker(
+                        context: context,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: AppColors.primaryColor,
+                                onPrimary: Colors.white,
+                                onSurface: Colors.black87,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+
+                      if (picked != null) {
+                        setState(() {
+                          _customDateRange = picked;
+                          _selectedDate = 'Custom';
+                        });
+                      }
+                    } else {
+                      setState(() => _selectedDate = d);
+                    }
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.only(right: 8),
@@ -246,14 +319,16 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                             : Colors.white.withOpacity(0.25),
                       ),
                     ),
-                    child: Text(d,
+                    child: Text(
+                        displayText,
                         style: TextStyle(
                           color: sel
                               ? AppColors.primaryColor
                               : Colors.white,
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                        )),
+                        )
+                    ),
                   ),
                 );
               }).toList(),
@@ -270,11 +345,17 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
               child: Row(
                 key: ValueKey(_tabController.index),
                 children: [
-                  _statBox('Total Amount', stats['amount']!,
-                      Icons.account_balance_wallet_rounded),
+                  _statBox(
+                      'Total Amount',
+                      stats['amount']!,
+                      Icons.account_balance_wallet_rounded
+                  ),
                   _vDivider(),
-                  _statBox('Total Txns', stats['txns']!,
-                      Icons.receipt_long_rounded),
+                  _statBox(
+                      'Total Txns',
+                      stats['txns']!,
+                      Icons.receipt_long_rounded
+                  ),
                   _vDivider(),
                   _statBox(
                     widget.isB2B ? 'Commission' : 'Cashback',
@@ -298,25 +379,41 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, color: Colors.white60, size: 18),
+          Icon(
+              icon,
+              color: Colors.white60,
+              size: 18
+          ),
           const SizedBox(height: 6),
-          Text(value,
+          Text(
+              value,
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 15,
-                  fontWeight: FontWeight.w800)),
+                  fontWeight: FontWeight.w800
+              )
+          ),
           const SizedBox(height: 3),
-          Text(label,
+          Text(
+              label,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: Colors.white60, fontSize: 10.5)),
+                  color: Colors.white60,
+                  fontSize: 10.5
+              )
+          ),
         ],
       ),
     );
   }
 
-  Widget _vDivider() => Container(
-      width: 1, height: 50, color: Colors.white.withOpacity(0.2));
+  Widget _vDivider() {
+    return Container(
+        width: 1,
+        height: 50,
+        color: Colors.white.withOpacity(0.2)
+    );
+  }
 
   // ── TAB BAR ──────────────────────────────────────────
   Widget _buildTabBar() {
@@ -352,14 +449,20 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.receipt_long_outlined,
-                size: 60, color: Colors.grey.shade300),
+            Icon(
+                Icons.receipt_long_outlined,
+                size: 60,
+                color: Colors.grey.shade300
+            ),
             const SizedBox(height: 12),
-            Text('No transactions found',
+            Text(
+                'No transactions found',
                 style: TextStyle(
                     color: Colors.grey.shade400,
                     fontSize: 15,
-                    fontWeight: FontWeight.w500)),
+                    fontWeight: FontWeight.w500
+                )
+            ),
           ],
         ),
       );
@@ -367,7 +470,7 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
 
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 40),
-      physics: const BouncingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       itemCount: list.length,
       itemBuilder: (context, i) {
         final curr = list[i];
@@ -390,7 +493,8 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Colors.grey.shade500,
-                      letterSpacing: 0.4),
+                      letterSpacing: 0.4
+                  ),
                 ),
               ),
             ],
@@ -450,8 +554,16 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                     color: iconBg.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(txn['icon'] as IconData,
-                      color: iconBg, size: 24),
+                  child: Center(
+                    child: Text(
+                      txn['opLogoText'] ?? 'O',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: iconBg,
+                      ),
+                    ),
+                  ),
                 ),
 
                 const SizedBox(width: 12),
@@ -467,13 +579,16 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                         MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: Text(txn['biller'],
+                            child: Text(
+                                txn['biller'],
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w700,
                                     fontSize: 14.5,
-                                    color: Color(0xFF1A1A2E)),
+                                    color: Color(0xFF1A1A2E)
+                                ),
                                 maxLines: 1,
-                                overflow: TextOverflow.ellipsis),
+                                overflow: TextOverflow.ellipsis
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -499,10 +614,13 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                         mainAxisAlignment:
                         MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(txn['number'],
+                          Text(
+                              txn['number'],
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade500)),
+                                  color: Colors.grey.shade500
+                              )
+                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 3),
@@ -511,11 +629,14 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                               borderRadius:
                               BorderRadius.circular(6),
                             ),
-                            child: Text(status,
+                            child: Text(
+                                status,
                                 style: TextStyle(
                                     color: statusColor,
                                     fontSize: 10.5,
-                                    fontWeight: FontWeight.w600)),
+                                    fontWeight: FontWeight.w600
+                                )
+                            ),
                           ),
                         ],
                       ),
@@ -525,22 +646,30 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                       // Row 3: Op Ref
                       Row(
                         children: [
-                          Icon(Icons.tag_rounded,
+                          Icon(
+                              Icons.tag_rounded,
                               size: 11,
-                              color: Colors.grey.shade400),
+                              color: Colors.grey.shade400
+                          ),
                           const SizedBox(width: 3),
-                          const Text('Op Ref: ',
+                          const Text(
+                              'Op Ref: ',
                               style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.grey)),
+                                  color: Colors.grey
+                              )
+                          ),
                           Expanded(
-                            child: Text(txn['opRef'],
+                            child: Text(
+                                txn['opRef'],
                                 style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black54),
+                                    color: Colors.black54
+                                ),
                                 maxLines: 1,
-                                overflow: TextOverflow.ellipsis),
+                                overflow: TextOverflow.ellipsis
+                            ),
                           ),
                         ],
                       ),
@@ -552,21 +681,26 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                         mainAxisAlignment:
                         MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(children: [
-                            Icon(Icons.access_time_rounded,
-                                size: 11,
-                                color: Colors.grey.shade400),
-                            const SizedBox(width: 3),
-                            Text(
-                              (txn['date'] as String).contains(',')
-                                  ? (txn['date'] as String)
-                                  .split(', ')[1]
-                                  : txn['date'],
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade400),
-                            ),
-                          ]),
+                          Row(
+                              children: [
+                                Icon(
+                                    Icons.access_time_rounded,
+                                    size: 11,
+                                    color: Colors.grey.shade400
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  (txn['date'] as String).contains(',')
+                                      ? (txn['date'] as String)
+                                      .split(',')[1].trim()
+                                      : txn['date'],
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade400
+                                  ),
+                                ),
+                              ]
+                          ),
 
                           // ✅ Sirf Success pe badge
                           if (isSuccess)
@@ -600,10 +734,10 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                                   const SizedBox(width: 3),
                                   Text(
                                     widget.isB2B
-                                        ? '+₹${(txn['commission'] as double).toStringAsFixed(2)}'
+                                        ? '+₹${(txn['commission'] as double?)?.toStringAsFixed(2) ?? '0.00'}'
                                         : (txn['cashback'] != null
                                         ? '+₹${(txn['cashback'] as double).toStringAsFixed(2)}'
-                                        : '+₹${(txn['commission'] as double).toStringAsFixed(2)}'),
+                                        : '+₹${(txn['commission'] as double?)?.toStringAsFixed(2) ?? '0.00'}'),
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -626,14 +760,30 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
 
           // View Receipt strip
           GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => RechargeDetailsScreen(
-                  isB2B: widget.isB2B,
+            onTap: () {
+              String amtStr = (txn['amount'] as double?)?.toStringAsFixed(0) ?? '0';
+              String rewardStr = widget.isB2B
+                  ? (txn['commission']?.toString() ?? '0.00')
+                  : (txn['cashback']?.toString() ?? txn['commission']?.toString() ?? '0.00');
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RechargeDetailsScreen(
+                    isB2B: widget.isB2B,
+                    category: txn['type'] ?? 'Prepaid',
+                    amount: amtStr,
+                    operatorName: txn['biller'] ?? 'Unknown',
+                    rechargeNumber: txn['number'] ?? '',
+                    txnId: txn['txnId'] ?? '',
+                    date: txn['date'] ?? '',
+                    rewardAmount: rewardStr,
+                    operatorLogoText: txn['opLogoText'] ?? 'O',
+                    operatorLogoBg: txn['iconBg'] as Color? ?? AppColors.primaryColor,
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 10),
@@ -649,17 +799,26 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long_rounded,
-                      size: 13, color: AppColors.primaryColor),
+                  Icon(
+                      Icons.receipt_long_rounded,
+                      size: 13,
+                      color: AppColors.primaryColor
+                  ),
                   const SizedBox(width: 6),
-                  const Text('View Receipt',
+                  const Text(
+                      'View Receipt',
                       style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primaryColor)),
+                          color: AppColors.primaryColor
+                      )
+                  ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.arrow_forward_ios_rounded,
-                      size: 10, color: AppColors.primaryColor),
+                  const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: AppColors.primaryColor
+                  ),
                 ],
               ),
             ),
@@ -708,19 +867,25 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                   mainAxisAlignment:
                   MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Filters',
+                    const Text(
+                        'Filters',
                         style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold)),
+                            fontWeight: FontWeight.bold
+                        )
+                    ),
                     TextButton(
                       onPressed: () => setS(() {
                         tempStatus = 'All';
                         tempCategory = 'All';
                       }),
-                      child: const Text('Reset All',
+                      child: const Text(
+                          'Reset All',
                           style: TextStyle(
                               color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w500)),
+                              fontWeight: FontWeight.w500
+                          )
+                      ),
                     ),
                   ],
                 ),
@@ -755,11 +920,14 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                           borderRadius:
                           BorderRadius.circular(14)),
                     ),
-                    child: const Text('Apply Filters',
+                    child: const Text(
+                        'Apply Filters',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 15,
-                            fontWeight: FontWeight.w600)),
+                            fontWeight: FontWeight.w600
+                        )
+                    ),
                   ),
                 ),
               ],
@@ -775,11 +943,14 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
+        Text(
+            title,
             style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600)),
+                color: Colors.grey.shade600
+            )
+        ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
@@ -798,13 +969,16 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen>
                       : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: Text(opt,
+                child: Text(
+                    opt,
                     style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w400,
                         color: sel
                             ? Colors.white
-                            : Colors.grey.shade700)),
+                            : Colors.grey.shade700
+                    )
+                ),
               ),
             );
           }).toList(),

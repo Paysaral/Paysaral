@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'app_colors.dart';
 import 'recharge_history_screen.dart';
+import 'recharge_details_screen.dart'; // ✅ LINKED SUCCESS SCREEN
 
 class DthRechargeScreen extends StatefulWidget {
-  const DthRechargeScreen({super.key});
+  final bool isB2B; // ✅ Added B2B support
+  const DthRechargeScreen({super.key, this.isB2B = false});
 
   @override
   State<DthRechargeScreen> createState() => _DthRechargeScreenState();
@@ -19,32 +21,33 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
   bool _operatorSelected = false;
   String selectedOperator = '';
   int _bannerIndex = 0;
+  bool _isLoading = false; // ✅ Added Loading State
 
   final List<Map<String, dynamic>> operatorsList = [
     {
       'name': 'Tata Play (formerly Tata Sky)',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Tata_Play_2022_logo.svg/512px-Tata_Play_2022_logo.svg.png',
-      'color': Color(0xFF6A1B9A),
+      'color': const Color(0xFF6A1B9A),
     },
     {
       'name': 'Airtel Digital TV',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Airtel_logo.png/512px-Airtel_logo.png',
-      'color': Color(0xFFE53935),
+      'color': const Color(0xFFE53935),
     },
     {
       'name': 'D2H',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Videocon_d2h_Logo.svg/512px-Videocon_d2h_Logo.svg.png',
-      'color': Color(0xFF7B1FA2),
+      'color': const Color(0xFF7B1FA2),
     },
     {
       'name': 'Dish TV',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Dish_TV_India_logo.svg/512px-Dish_TV_India_logo.svg.png',
-      'color': Color(0xFFE65100),
+      'color': const Color(0xFFE65100),
     },
     {
       'name': 'Sun Direct',
       'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e6/Sun_Direct_logo.svg/512px-Sun_Direct_logo.svg.png',
-      'color': Color(0xFFF9A825),
+      'color': const Color(0xFFF9A825),
     },
   ];
 
@@ -67,8 +70,8 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
       'id': 'VC1234567890',
       'operator': 'Tata Play (formerly Tata Sky)',
       'operatorLogo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Tata_Play_2022_logo.svg/512px-Tata_Play_2022_logo.svg.png',
-      'operatorColor': Color(0xFF6A1B9A),
-      'amount': '₹500',
+      'operatorColor': const Color(0xFF6A1B9A),
+      'amount': '500',
       'date': '20 Mar 2026',
     },
     {
@@ -76,8 +79,8 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
       'id': 'VC9876543210',
       'operator': 'Airtel Digital TV',
       'operatorLogo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Airtel_logo.png/512px-Airtel_logo.png',
-      'operatorColor': Color(0xFFE53935),
-      'amount': '₹300',
+      'operatorColor': const Color(0xFFE53935),
+      'amount': '300',
       'date': '15 Mar 2026',
     },
     {
@@ -85,8 +88,8 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
       'id': 'VC1122334455',
       'operator': 'Dish TV',
       'operatorLogo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Dish_TV_India_logo.svg/512px-Dish_TV_India_logo.svg.png',
-      'operatorColor': Color(0xFFE65100),
-      'amount': '₹200',
+      'operatorColor': const Color(0xFFE65100),
+      'amount': '200',
       'date': '10 Mar 2026',
     },
   ];
@@ -97,6 +100,53 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
     _amountController.dispose();
     _idFocus.dispose();
     super.dispose();
+  }
+
+  // ✅ JADOO: Process Recharge & Send Data to Success Screen
+  Future<void> _processRecharge() async {
+    FocusScope.of(context).unfocus(); // Keyboard band karo
+
+    String amount = _amountController.text.trim();
+    String subId = _idController.text.trim();
+
+    if (subId.isEmpty || subId.length < 5) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid Subscriber ID')));
+      return;
+    }
+    if (amount.isEmpty || amount == '0') {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid amount')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Simulated API delay (2 seconds)
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    // Get operator details for logo passing
+    var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
+
+    // ✅ Pura data bhej rahe hain apne drawing wale Success Screen ko
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RechargeDetailsScreen(
+          isB2B: widget.isB2B,
+          category: 'DTH', // Category change ki hai
+          amount: amount,
+          operatorName: selectedOperator,
+          rechargeNumber: 'Sub ID: $subId', // Sub ID format
+          txnId: 'DTH${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+          date: '25 Mar 2026, 05:15 PM',
+          rewardAmount: widget.isB2B ? '12.50' : '0.00', // Dummy commission
+          operatorLogoText: selectedOperator[0],
+          operatorLogoBg: opData['color'] as Color,
+        ),
+      ),
+    );
   }
 
   void _selectOperator(String name) {
@@ -361,7 +411,7 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
   }
 
   // ══════════════════════════════════════
-  // SCREEN 1
+  // SCREEN 1 (Select Operator)
   // ══════════════════════════════════════
   Widget _buildScreen1() {
     return CustomScrollView(
@@ -403,7 +453,6 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700)),
                         ),
-                        // ✅ SCREEN 1 me bhi history button
                         IconButton(
                           icon: Container(
                             padding: const EdgeInsets.all(7),
@@ -418,9 +467,7 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RechargeHistoryScreen(
-                                  isB2B: true,
-                                ),
+                                builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
                               ),
                             );
                           },
@@ -518,7 +565,7 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
   }
 
   // ══════════════════════════════════════
-  // SCREEN 2
+  // SCREEN 2 (Enter ID and Amount)
   // ══════════════════════════════════════
   Widget _buildScreen2() {
     var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
@@ -566,7 +613,6 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700)),
                         ),
-                        // ✅ FIX 1 — History Button Connected
                         IconButton(
                           icon: Container(
                             padding: const EdgeInsets.all(7),
@@ -581,7 +627,7 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const RechargeHistoryScreen(),
+                                builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
                               ),
                             );
                           },
@@ -794,12 +840,12 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
 
               const SizedBox(height: 20),
 
-              // Pay Button
+              // ✅ JADOO: Animated Pay Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _isLoading ? null : _processRecharge,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -809,8 +855,10 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                   ),
                   child: Ink(
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF00695C), Color(0xFF009688)],
+                      gradient: LinearGradient(
+                        colors: _isLoading
+                            ? [Colors.grey.shade400, Colors.grey.shade500]
+                            : [const Color(0xFF00695C), const Color(0xFF009688)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -818,7 +866,9 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                     ),
                     child: Container(
                       alignment: Alignment.center,
-                      child: const Row(
+                      child: _isLoading
+                          ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                          : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.lock_rounded,
@@ -875,13 +925,12 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: Colors.black87)),
-                  // ✅ FIX 2 — See All Connected
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const RechargeHistoryScreen(),
+                          builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
                         ),
                       );
                     },
@@ -933,7 +982,7 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(t['amount'],
+                              Text('₹${t['amount']}',
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w700,
                                       fontSize: 14,
@@ -946,7 +995,11 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
                           ),
                           onTap: () {
                             _idController.text = t['id'];
-                            setState(() => selectedOperator = t['operator']);
+                            _amountController.text = t['amount'];
+                            setState(() {
+                              selectedOperator = t['operator'];
+                              _operatorSelected = true; // Auto skip to screen 2
+                            });
                           },
                         ),
                         if (idx != recentTransactions.length - 1)

@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'app_colors.dart';
 import 'recharge_history_screen.dart';
+import 'recharge_details_screen.dart';
 
 class MobileRechargeScreen extends StatefulWidget {
-  const MobileRechargeScreen({super.key});
+  final bool isB2B;
+  const MobileRechargeScreen({super.key, this.isB2B = false});
 
   @override
   State<MobileRechargeScreen> createState() => _MobileRechargeScreenState();
@@ -20,6 +22,8 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
   bool isPrepaid = true;
   int _currentOfferIndex = 0;
+  bool _isLoading = false;
+  bool _isPhoneValid = false;
 
   String selectedPrepaidOperator = 'Airtel';
   String selectedPrepaidCircle = 'Jharkhand';
@@ -30,22 +34,22 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     {
       'name': 'Airtel',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Airtel_logo.png/512px-Airtel_logo.png',
-      'color': Color(0xFFE53935),
+      'color': const Color(0xFFE53935),
     },
     {
       'name': 'Jio',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Reliance_Jio_Logo_%28October_2015%29.svg/512px-Reliance_Jio_Logo_%28October_2015%29.svg.png',
-      'color': Color(0xFF1565C0),
+      'color': const Color(0xFF1565C0),
     },
     {
       'name': 'Vi',
       'logo': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Vodafone_Idea_logo.svg/512px-Vodafone_Idea_logo.svg.png',
-      'color': Color(0xFFAD1457),
+      'color': const Color(0xFFAD1457),
     },
     {
       'name': 'BSNL',
       'logo': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/BSNL_logo.svg/512px-BSNL_logo.svg.png',
-      'color': Color(0xFF1565C0),
+      'color': const Color(0xFF1565C0),
     },
   ];
 
@@ -55,11 +59,11 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   ];
 
   final List<Map<String, dynamic>> recentRecharges = [
-    {'name': 'Rahul Singh', 'number': '9876543210', 'operator': 'Jio',    'amount': '₹299'},
-    {'name': 'Mom',         'number': '9123456789', 'operator': 'Airtel', 'amount': '₹199'},
-    {'name': 'Shop WiFi',   'number': '9988776655', 'operator': 'Vi',     'amount': '₹349'},
-    {'name': 'Papa',        'number': '9431000000', 'operator': 'Airtel', 'amount': '₹666'},
-    {'name': 'Amit',        'number': '9123412345', 'operator': 'Jio',    'amount': '₹199'},
+    {'name': 'Rahul Singh', 'number': '9876543210', 'operator': 'Jio',    'amount': '299'},
+    {'name': 'Mom',         'number': '9123456789', 'operator': 'Airtel', 'amount': '199'},
+    {'name': 'Shop WiFi',   'number': '9988776655', 'operator': 'Vi',     'amount': '349'},
+    {'name': 'Papa',        'number': '9431000000', 'operator': 'Airtel', 'amount': '666'},
+    {'name': 'Amit',        'number': '9123412345', 'operator': 'Jio',    'amount': '199'},
   ];
 
   final List<Map<String, dynamic>> quickPlans = [
@@ -93,6 +97,82 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     super.dispose();
   }
 
+  void _onNumberChanged(String value) {
+    if (value.length == 10) {
+      String detectedOp = 'Airtel';
+      if (value.startsWith('98') || value.startsWith('99')) {
+        detectedOp = 'Airtel';
+      } else if (value.startsWith('7') || value.startsWith('8')) {
+        detectedOp = 'Jio';
+      } else if (value.startsWith('6')) {
+        detectedOp = 'Vi';
+      } else {
+        detectedOp = 'BSNL';
+      }
+
+      setState(() {
+        _isPhoneValid = true;
+        if (isPrepaid) {
+          selectedPrepaidOperator = detectedOp;
+        } else {
+          selectedPostpaidOperator = detectedOp;
+        }
+      });
+      HapticFeedback.lightImpact();
+    } else {
+      if (_isPhoneValid) {
+        setState(() {
+          _isPhoneValid = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _processRecharge() async {
+    FocusScope.of(context).unfocus();
+
+    String amount = isPrepaid ? _prepaidAmountController.text : _postpaidAmountController.text;
+    String number = isPrepaid ? _prepaidPhoneController.text : _postpaidPhoneController.text;
+    String opName = isPrepaid ? selectedPrepaidOperator : selectedPostpaidOperator;
+
+    if (number.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid 10-digit number')));
+      return;
+    }
+    if (amount.isEmpty || amount == '0') {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid amount')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    var opData = operatorsList.firstWhere((o) => o['name'] == opName);
+
+    // ✅ Yahan hum ensures karte hain ki parent se aayi hui 'isB2B' value aage pass ho
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RechargeDetailsScreen(
+          isB2B: widget.isB2B,
+          category: isPrepaid ? 'Prepaid' : 'Postpaid',
+          amount: amount,
+          operatorName: opName,
+          rechargeNumber: '+91 $number',
+          txnId: 'TXN${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+          date: '25 Mar 2026, 04:30 PM',
+          rewardAmount: widget.isB2B ? '4.50' : '0.00',
+          operatorLogoText: opName[0],
+          operatorLogoBg: opData['color'] as Color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildLogo(String name, String url, Color color, double size) {
     return Container(
       width: size, height: size,
@@ -123,7 +203,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     );
   }
 
-  // ── Operator List Widget ───────────────────────────
   Widget _buildOperatorList(
       String tempOp, StateSetter setS, Function(String) onSelect) {
     return ListView.separated(
@@ -207,7 +286,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     );
   }
 
-  // ── Circle List Widget ─────────────────────────────
   Widget _buildCircleList(
       String tempOp, String tempCircle, BuildContext ctx, StateSetter setS) {
     return ListView.separated(
@@ -278,7 +356,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     );
   }
 
-  // ── Operator Sheet ─────────────────────────────────
   void _showOperatorSheet(BuildContext context) {
     int step = 1;
     String tempOp =
@@ -300,7 +377,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setS) => SafeArea(
           child: AnimatedSize(
-            // ✅ Height change smooth
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
             alignment: Alignment.topCenter,
@@ -308,8 +384,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                // Drag handle
                 Center(
                   child: Container(
                     margin: const EdgeInsets.only(top: 12, bottom: 6),
@@ -320,8 +394,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     ),
                   ),
                 ),
-
-                // Title row
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 10, 20, 8),
                   child: Row(
@@ -352,10 +424,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
-                // ✅ Step 1 ↔ 2 smooth fade
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 280),
                   switchInCurve: Curves.easeIn,
@@ -374,7 +443,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       : _buildCircleList(
                       tempOp, tempCircle, ctx, setS),
                 ),
-
                 const SizedBox(height: 16),
               ],
             ),
@@ -404,8 +472,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
           backgroundColor: const Color(0xFFF5F7FA),
           body: CustomScrollView(
             slivers: [
-
-              // ══ HERO HEADER ═══════════════════════════
               SliverToBoxAdapter(
                 child: Container(
                   decoration: const BoxDecoration(
@@ -423,8 +489,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     bottom: false,
                     child: Column(
                       children: [
-
-                        // AppBar
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 6),
@@ -459,7 +523,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const RechargeHistoryScreen(isB2B: true),
+                                      builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
                                     ),
                                   );
                                 },
@@ -467,8 +531,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ],
                           ),
                         ),
-
-                        // Toggle
                         Padding(
                           padding:
                           const EdgeInsets.symmetric(horizontal: 20),
@@ -524,10 +586,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 16),
-
-                        // ── Phone input card ──
                         Padding(
                           padding:
                           const EdgeInsets.symmetric(horizontal: 20),
@@ -545,13 +604,11 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                             ),
                             child: Column(
                               children: [
-
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(
-                                      16, 16, 16, 0),
+                                      16, 16, 16, 16),
                                   child: Row(
                                     children: [
-
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
@@ -566,9 +623,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                           size: 22,
                                         ),
                                       ),
-
                                       const SizedBox(width: 12),
-
                                       Expanded(
                                         child: TextField(
                                           controller: isPrepaid
@@ -604,9 +659,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                                 FontWeight.w400),
                                             border: InputBorder.none,
                                           ),
+                                          onChanged: _onNumberChanged,
                                         ),
                                       ),
-
                                       IconButton(
                                         onPressed: () {},
                                         icon: Container(
@@ -628,64 +683,71 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                     ],
                                   ),
                                 ),
-
-                                Divider(
-                                    color: Colors.grey.shade100,
-                                    thickness: 1,
-                                    height: 20),
-
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(
-                                      16, 0, 8, 14),
-                                  child: Row(
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOutCubic,
+                                  child: _isPhoneValid
+                                      ? Column(
                                     children: [
-                                      _buildLogo(
-                                          currentOperator,
-                                          opData['logo'],
-                                          opData['color'] as Color,
-                                          38),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      Divider(
+                                          color: Colors.grey.shade100,
+                                          thickness: 1,
+                                          height: 1),
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            16, 14, 8, 14),
+                                        child: Row(
                                           children: [
-                                            Text(currentOperator,
-                                                style: const TextStyle(
-                                                    fontWeight:
-                                                    FontWeight.w700,
-                                                    fontSize: 14)),
-                                            Text(currentCircle,
-                                                style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Colors
-                                                        .grey.shade500)),
+                                            _buildLogo(
+                                                currentOperator,
+                                                opData['logo'],
+                                                opData['color'] as Color,
+                                                38),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(currentOperator,
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                          FontWeight.w700,
+                                                          fontSize: 14)),
+                                                  Text(currentCircle,
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: Colors
+                                                              .grey.shade500)),
+                                                ],
+                                              ),
+                                            ),
+                                            TextButton.icon(
+                                              onPressed: () =>
+                                                  _showOperatorSheet(context),
+                                              icon: const Icon(
+                                                  Icons.swap_horiz_rounded,
+                                                  size: 16),
+                                              label: const Text('Change'),
+                                              style: TextButton.styleFrom(
+                                                foregroundColor:
+                                                AppColors.primaryColor,
+                                                textStyle: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 13),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),
-                                      TextButton.icon(
-                                        onPressed: () =>
-                                            _showOperatorSheet(context),
-                                        icon: const Icon(
-                                            Icons.swap_horiz_rounded,
-                                            size: 16),
-                                        label: const Text('Change'),
-                                        style: TextButton.styleFrom(
-                                          foregroundColor:
-                                          AppColors.primaryColor,
-                                          textStyle: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 13),
-                                        ),
-                                      ),
                                     ],
-                                  ),
+                                  )
+                                      : const SizedBox(width: double.infinity, height: 0),
                                 ),
                               ],
                             ),
                           ),
                         ),
-
                         const SizedBox(height: 28),
                       ],
                     ),
@@ -693,13 +755,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                 ),
               ),
 
-              // ══ BODY ══════════════════════════════════
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-
-                    // ── Amount card ──
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -786,15 +845,12 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // ── Pay button ──
                     SizedBox(
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: _isLoading ? null : _processRecharge,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
@@ -804,11 +860,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                         child: Ink(
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF00695C),
-                                Color(0xFF009688)
-                              ],
+                            gradient: LinearGradient(
+                              colors: _isLoading
+                                  ? [Colors.grey.shade400, Colors.grey.shade500]
+                                  : [const Color(0xFF00695C), const Color(0xFF009688)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -816,16 +871,15 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           ),
                           child: Container(
                             alignment: Alignment.center,
-                            child: Row(
+                            child: _isLoading
+                                ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                : Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.lock_rounded,
-                                    color: Colors.white70, size: 16),
+                                const Icon(Icons.lock_rounded, color: Colors.white70, size: 16),
                                 const SizedBox(width: 8),
                                 Text(
-                                  isPrepaid
-                                      ? 'Proceed to Pay'
-                                      : 'Pay Bill',
+                                  isPrepaid ? 'Proceed to Pay' : 'Pay Bill',
                                   style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
@@ -838,10 +892,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 24),
-
-                    // ── Quick Plans ──
                     if (isPrepaid) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -868,8 +919,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       ),
                       const SizedBox(height: 28),
                     ],
-
-                    // ── Recent Recharges ──
                     if (isPrepaid) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -884,7 +933,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => const RechargeHistoryScreen(isB2B: true),
+                                  builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
                                 ),
                               );
                             },
@@ -943,7 +992,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                     crossAxisAlignment:
                                     CrossAxisAlignment.end,
                                     children: [
-                                      Text(r['amount'],
+                                      Text('₹${r['amount']}',
                                           style: const TextStyle(
                                               fontWeight: FontWeight.w700,
                                               fontSize: 14,
@@ -956,11 +1005,12 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                     ],
                                   ),
                                   onTap: () {
-                                    _prepaidPhoneController.text =
-                                    r['number'];
-                                    setState(() =>
-                                    selectedPrepaidOperator =
-                                    r['operator']);
+                                    _prepaidPhoneController.text = r['number'];
+                                    _prepaidAmountController.text = r['amount'].replaceAll('₹', '');
+                                    setState(() {
+                                      _isPhoneValid = true;
+                                      selectedPrepaidOperator = r['operator'];
+                                    });
                                   },
                                 ),
                                 if (idx != recentRecharges.length - 1)
@@ -975,7 +1025,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       ),
                     ] else ...[
-
                       CarouselSlider.builder(
                         itemCount: offerImages.length,
                         options: CarouselOptions(
@@ -1031,7 +1080,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         }).toList(),
                       ),
                     ],
-
                     const SizedBox(height: 20),
                   ]),
                 ),
@@ -1044,9 +1092,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
   }
 }
 
-// ════════════════════════════════════════════════════
-// ✅ Quick Plans — Isolated StatefulWidget
-// ════════════════════════════════════════════════════
 class _QuickPlanSelector extends StatefulWidget {
   final List<Map<String, dynamic>> plans;
   final TextEditingController amountController;
@@ -1081,8 +1126,6 @@ class _QuickPlanSelectorState extends State<_QuickPlanSelector> {
                 borderRadius: BorderRadius.circular(12),
                 child: Stack(
                   children: [
-
-                    // Layer 1 — White background
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
@@ -1107,8 +1150,6 @@ class _QuickPlanSelectorState extends State<_QuickPlanSelector> {
                         ],
                       ),
                     ),
-
-                    // Layer 2 — Gradient fade
                     Positioned.fill(
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 250),
@@ -1128,8 +1169,6 @@ class _QuickPlanSelectorState extends State<_QuickPlanSelector> {
                         ),
                       ),
                     ),
-
-                    // Layer 3 — Text
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 10),
@@ -1161,7 +1200,6 @@ class _QuickPlanSelectorState extends State<_QuickPlanSelector> {
                         ],
                       ),
                     ),
-
                   ],
                 ),
               ),

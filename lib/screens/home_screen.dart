@@ -5,21 +5,23 @@ import 'app_colors.dart';
 
 import 'mobile_recharge_screen.dart';
 import 'dth_recharge_screen.dart';
-import 'electricity_bill_screen.dart'; // ✅ ADD
+import 'electricity_bill_screen.dart';
 import 'transaction_history_screen.dart';
 import 'add_money_screen.dart';
 import 'electricity_operator_screen.dart';
+import 'recharge_history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final double topPadding;
-  const HomeScreen({super.key, required this.topPadding});
+  final bool isB2B; // ✅ JADOO 2: Ab yeh parameter lega!
+  const HomeScreen({super.key, required this.topPadding, this.isB2B = false});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool isB2B = false;
+  late bool isB2B;
 
   List<Map<String, dynamic>> categorySections = [
     {
@@ -77,13 +79,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    isB2B = widget.isB2B; // Initializing from parent
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      isB2B = prefs.getBool('isB2B') ?? false;
+      isB2B = prefs.getBool('isB2B') ?? widget.isB2B; // Safely taking value
       for (var section in categorySections) {
         section['isPinned'] = prefs.getBool('pinned_${section['id']}') ?? false;
       }
@@ -183,11 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
               _topActionIcon(Icons.send_to_mobile, 'To Mobile', onTap: () {}),
               _topActionIcon(Icons.account_balance, 'To Bank', onTap: () {}),
               _topActionIcon(Icons.history_edu, 'History', onTap: () {
+                // ✅ JADOO: History Screen me bhi B2B bhej diya!
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => TransactionHistoryScreen(
-                          pageTitle: 'Transaction History',
+                        builder: (context) => RechargeHistoryScreen(
                           isB2B: isB2B,
                         )));
               }),
@@ -429,20 +432,20 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
+                    // ✅ JADOO: Ab har screen ke paas tumhara status (B2B/B2C) pohoch jayega!
                     if (services[index]['name'] == 'Mobile') {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                              const MobileRechargeScreen()));
+                                  MobileRechargeScreen(isB2B: isB2B)));
                     } else if (services[index]['name'] == 'DTH') {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                              const DthRechargeScreen()));
+                                  DthRechargeScreen(isB2B: isB2B))); // ✅ Added here too
                     } else if (services[index]['name'] == 'Electricity') {
-                      // ✅ ADD
                       Navigator.push(
                           context,
                           MaterialPageRoute(

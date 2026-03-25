@@ -6,7 +6,7 @@ import 'home_screen.dart';
 import 'wallet_screen.dart';
 import 'reports_screen.dart';
 import 'profile_screen.dart';
-import 'add_money_screen.dart'; // ✅ JADOO 1: Add Money Screen Import ho gayi!
+import 'add_money_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -17,7 +17,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
-  bool isB2B = false; // ✅ JADOO 2: B2B check karne ke liye variable
+  bool isB2B = false;
 
   @override
   void initState() {
@@ -25,7 +25,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadUserRole();
   }
 
-  // ✅ Dashboard ko bhi pata chalna chahiye ki user B2B hai ya B2C
   Future<void> _loadUserRole() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (mounted) {
@@ -50,7 +49,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         statusBarIconBrightness: Brightness.light,
       ),
       child: PopScope(
-        // ✅ BACK PRESS FIX
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
@@ -67,16 +65,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           body: Stack(
             children: [
 
-              // ✅ IndexedStack — smooth tab switching
               Positioned.fill(
                 child: IndexedStack(
                   index: _currentIndex,
                   children: [
-                    HomeScreen(topPadding: headerHeight),
+                    // ✅ JADOO: Ab hum HomeScreen ko bhi isB2B pass kar sakte hain
+                    HomeScreen(
+                      topPadding: headerHeight,
+                      // isB2B: isB2B, // Agar HomeScreen me zarurat ho to ye un-comment kar lena
+                    ),
                     WalletScreen(
                       topPadding: headerHeight,
                       onGoToReports: () => _changeTab(2),
-                      // ✅ JADOO 3: Add Money ka rasta yahan set ho gaya!
                       onGoToAddMoney: () {
                         Navigator.push(
                           context,
@@ -108,7 +108,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
 
-                      // Left — Avatar + Title
                       Row(
                         children: [
                           Builder(
@@ -159,7 +158,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ],
                       ),
 
-                      // Right — Help + Notification
                       Row(
                         children: [
                           IconButton(
@@ -195,7 +193,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ── BOTTOM NAV ──────────────────────────────────────
   Widget _buildBottomNav() {
     return BottomAppBar(
       color: AppColors.deepMenuColor,
@@ -273,7 +270,6 @@ class _MainSideDrawerState extends State<MainSideDrawer> {
       child: Column(
         children: [
 
-          // Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(
@@ -305,7 +301,6 @@ class _MainSideDrawerState extends State<MainSideDrawer> {
             ),
           ),
 
-          // Menu Items
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
