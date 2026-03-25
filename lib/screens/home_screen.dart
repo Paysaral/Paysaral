@@ -5,7 +5,10 @@ import 'app_colors.dart';
 
 import 'mobile_recharge_screen.dart';
 import 'dth_recharge_screen.dart';
+import 'electricity_bill_screen.dart'; // ✅ ADD
 import 'transaction_history_screen.dart';
+import 'add_money_screen.dart';
+import 'electricity_operator_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final double topPadding;
@@ -16,13 +19,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // ✅ नया वेरिएबल जो तय करेगा कि यूज़र रिटेलर है या आम यूज़र
   bool isB2B = false;
 
   List<Map<String, dynamic>> categorySections = [
     {
       'id': 'banking', 'order': 1, 'title': 'Banking & AEPS', 'isPinned': false,
-      // ✅ यह डब्बा सिर्फ़ रिटेलर को दिखेगा
       'isB2BOnly': true,
       'services': [
         {'icon': Icons.fingerprint, 'name': 'AEPS'},
@@ -35,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'id': 'recharge', 'order': 2, 'title': 'Recharge & Bill Pay', 'isPinned': false,
-      'isB2BOnly': false, // यह सबको दिखेगा
+      'isB2BOnly': false,
       'services': [
         {'icon': Icons.phone_android, 'name': 'Mobile'},
         {'icon': Icons.tv, 'name': 'DTH'},
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'id': 'travel', 'order': 3, 'title': 'Travel & More', 'isPinned': false,
-      'isB2BOnly': false, // यह सबको दिखेगा
+      'isB2BOnly': false,
       'services': [
         {'icon': Icons.flight_takeoff, 'name': 'Flight'},
         {'icon': Icons.train, 'name': 'Train'},
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'id': 'mall', 'order': 4, 'title': 'Paysaral Mall (Shopping)', 'isPinned': false,
-      'isB2BOnly': false, // यह सबको दिखेगा
+      'isB2BOnly': false,
       'services': [
         {'icon': Icons.shopping_bag_outlined, 'name': 'Electronics'},
         {'icon': Icons.checkroom, 'name': 'Fashion'},
@@ -76,15 +77,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadUserData(); // ✅ सबसे पहले यूज़र का डेटा लोड करेंगे
+    _loadUserData();
   }
 
-  // ✅ यह फंक्शन फोन की मेमोरी से चेक करेगा कि यूज़र B2B है या B2C
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isB2B = prefs.getBool('isB2B') ?? false;
-
       for (var section in categorySections) {
         section['isPinned'] = prefs.getBool('pinned_${section['id']}') ?? false;
       }
@@ -112,11 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ जादू: जो सर्विस B2BOnly हैं, वो आम यूज़र को दिखेंगी ही नहीं
     List<Map<String, dynamic>> displaySections = categorySections.where((section) {
-      if (!isB2B && section['isB2BOnly'] == true) {
-        return false; // आम यूज़र के लिए AEPS वाला डब्बा छुपा दो
-      }
+      if (!isB2B && section['isB2BOnly'] == true) return false;
       return true;
     }).toList();
 
@@ -129,8 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 20),
           _buildPromoBanner(),
           const SizedBox(height: 15),
-
-          // ✅ यहाँ अब 'displaySections' का इस्तेमाल किया है
           ...displaySections.asMap().entries.map((entry) {
             int index = entry.key;
             var section = entry.value;
@@ -158,7 +152,9 @@ class _HomeScreenState extends State<HomeScreen> {
           height: 60, width: double.infinity,
           decoration: const BoxDecoration(
             color: AppColors.primaryColor,
-            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30)),
           ),
         ),
         Container(
@@ -167,12 +163,23 @@ class _HomeScreenState extends State<HomeScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8))],
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8))
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _topActionIcon(Icons.add_card, 'Add Money', onTap: () {}),
+              _topActionIcon(Icons.add_card, 'Add Money', onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AddMoneyScreen(isB2B: isB2B),
+                    ));
+              }),
               _topActionIcon(Icons.send_to_mobile, 'To Mobile', onTap: () {}),
               _topActionIcon(Icons.account_balance, 'To Bank', onTap: () {}),
               _topActionIcon(Icons.history_edu, 'History', onTap: () {
@@ -181,10 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(
                         builder: (context) => TransactionHistoryScreen(
                           pageTitle: 'Transaction History',
-                          isB2B: isB2B, // ✅ हिस्ट्री पेज भी इसी हिसाब से खुलेगा
-                        )
-                    )
-                );
+                          isB2B: isB2B,
+                        )));
               }),
             ],
           ),
@@ -204,12 +209,21 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               color: AppColors.primaryColor,
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: AppColors.primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                    color: AppColors.primaryColor.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ],
             ),
             child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87)),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87)),
         ],
       ),
     );
@@ -227,14 +241,26 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               gradient: LinearGradient(
-                colors: index == 0 ? [AppColors.primaryColor, AppColors.deepMenuColor] : [const Color(0xFFF2994A), const Color(0xFFF2C94C)],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                colors: index == 0
+                    ? [AppColors.primaryColor, AppColors.deepMenuColor]
+                    : [const Color(0xFFF2994A), const Color(0xFFF2C94C)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4))
+              ],
             ),
             child: Stack(
               children: [
-                Positioned(right: -10, bottom: -10, child: Icon(Icons.campaign, color: Colors.white.withOpacity(0.2), size: 90)),
+                Positioned(
+                    right: -10,
+                    bottom: -10,
+                    child: Icon(Icons.campaign,
+                        color: Colors.white.withOpacity(0.2), size: 90)),
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -242,14 +268,34 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4)),
-                        child: const Text('MEGA OFFER', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(4)),
+                        child: const Text('MEGA OFFER',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1)),
                       ),
                       const SizedBox(height: 8),
-                      Text(index == 0 ? 'Flat ₹50 Cashback' : 'Free Bank Settlement', style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                      Text(
+                          index == 0
+                              ? 'Flat ₹50 Cashback'
+                              : 'Free Bank Settlement',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold)),
                       const SizedBox(height: 4),
-                      Text(index == 0 ? 'On your first AEPS transaction' : 'For all premium users', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      Text(
+                          index == 0
+                              ? 'On your first AEPS transaction'
+                              : 'For all premium users',
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -271,14 +317,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return CarouselSlider.builder(
       itemCount: images.length,
-      options: CarouselOptions(height: 130, viewportFraction: 0.88, enlargeCenterPage: true, autoPlay: true, autoPlayInterval: const Duration(seconds: 4)),
+      options: CarouselOptions(
+          height: 130,
+          viewportFraction: 0.88,
+          enlargeCenterPage: true,
+          autoPlay: true,
+          autoPlayInterval: const Duration(seconds: 4)),
       itemBuilder: (context, index, realIndex) {
         return Container(
           width: double.infinity,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4))
+              ]),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: images[index].startsWith('http') ? Image.network(images[index], fit: BoxFit.cover) : Image.asset(images[index], fit: BoxFit.cover),
+            child: images[index].startsWith('http')
+                ? Image.network(images[index], fit: BoxFit.cover)
+                : Image.asset(images[index], fit: BoxFit.cover),
           ),
         );
       },
@@ -298,22 +358,46 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(sectionData['title'], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87)),
+              Text(sectionData['title'],
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87)),
               InkWell(
                 onTap: () => _toggleSectionPin(id),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: sectionData['isPinned'] ? AppColors.accentColor : Colors.transparent,
+                    color: sectionData['isPinned']
+                        ? AppColors.accentColor
+                        : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: sectionData['isPinned'] ? AppColors.accentColor : Colors.grey.shade400),
+                    border: Border.all(
+                        color: sectionData['isPinned']
+                            ? AppColors.accentColor
+                            : Colors.grey.shade400),
                   ),
                   child: Row(
                     children: [
-                      Icon(sectionData['isPinned'] ? Icons.push_pin : Icons.push_pin_outlined, size: 14, color: sectionData['isPinned'] ? Colors.white : Colors.grey.shade700),
+                      Icon(
+                          sectionData['isPinned']
+                              ? Icons.push_pin
+                              : Icons.push_pin_outlined,
+                          size: 14,
+                          color: sectionData['isPinned']
+                              ? Colors.white
+                              : Colors.grey.shade700),
                       const SizedBox(width: 4),
-                      Text(sectionData['isPinned'] ? 'Pinned' : 'Pin to top', style: TextStyle(color: sectionData['isPinned'] ? Colors.white : Colors.grey.shade700, fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(
+                          sectionData['isPinned'] ? 'Pinned' : 'Pin to top',
+                          style: TextStyle(
+                              color: sectionData['isPinned']
+                                  ? Colors.white
+                                  : Colors.grey.shade700,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -322,18 +406,48 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.only(top: 18, left: 16, right: 16, bottom: 4),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)]),
+            padding: const EdgeInsets.only(
+                top: 18, left: 16, right: 16, bottom: 4),
+            decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10)
+                ]),
             child: GridView.builder(
-              shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), padding: EdgeInsets.zero, itemCount: services.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 8, mainAxisSpacing: 4, childAspectRatio: 0.74),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemCount: services.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 4,
+                  childAspectRatio: 0.74),
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
                     if (services[index]['name'] == 'Mobile') {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const MobileRechargeScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                              const MobileRechargeScreen()));
                     } else if (services[index]['name'] == 'DTH') {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DthRechargeScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                              const DthRechargeScreen()));
+                    } else if (services[index]['name'] == 'Electricity') {
+                      // ✅ ADD
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                              const ElectricityOperatorScreen()));
                     }
                   },
                   child: Column(
@@ -341,11 +455,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Container(
                         height: 48, width: 48,
-                        decoration: BoxDecoration(color: const Color(0xFFF0FAF9), borderRadius: BorderRadius.circular(12)),
-                        child: Icon(services[index]['icon'] as IconData, color: AppColors.primaryColor, size: 24),
+                        decoration: BoxDecoration(
+                            color: const Color(0xFFF0FAF9),
+                            borderRadius: BorderRadius.circular(12)),
+                        child: Icon(services[index]['icon'] as IconData,
+                            color: AppColors.primaryColor, size: 24),
                       ),
                       const SizedBox(height: 6),
-                      Expanded(child: Text(services[index]['name'] as String, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: Colors.black87, height: 1.1))),
+                      Expanded(
+                          child: Text(services[index]['name'] as String,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                  height: 1.1))),
                     ],
                   ),
                 );

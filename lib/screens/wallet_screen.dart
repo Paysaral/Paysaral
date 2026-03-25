@@ -5,11 +5,13 @@ import 'app_colors.dart';
 class WalletScreen extends StatefulWidget {
   final double topPadding;
   final VoidCallback onGoToReports;
+  final VoidCallback onGoToAddMoney; // ✅ JADOO: Naya callback Add Money ke liye
 
   const WalletScreen({
     super.key,
     required this.topPadding,
-    required this.onGoToReports
+    required this.onGoToReports,
+    required this.onGoToAddMoney, // ✅ Yahan receive hoga
   });
 
   @override
@@ -41,8 +43,6 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      // ✅ FIX YAHAN HAI: BouncingScrollPhysics हटाकर ClampingScrollPhysics लगा दिया है
-      // अब पेज रबर की तरह नहीं खिंचेगा, एकदम सॉलिड रुकेगा!
       physics: const ClampingScrollPhysics(),
       padding: EdgeInsets.only(
         top: widget.topPadding + 20,
@@ -150,9 +150,10 @@ class _WalletScreenState extends State<WalletScreen> {
             decoration: BoxDecoration(color: Colors.black.withOpacity(0.15), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24))),
             child: Row(
               children: [
-                Expanded(child: _cardActionButton(Icons.add_circle, 'Add Money')),
+                // ✅ JADOO: Yahan Add Money button par onGoToAddMoney lag gaya
+                Expanded(child: _cardActionButton(Icons.add_circle, 'Add Money', onTap: widget.onGoToAddMoney)),
                 Container(width: 1, height: 30, color: Colors.white24),
-                Expanded(child: _cardActionButton(Icons.send, 'Send Money')),
+                Expanded(child: _cardActionButton(Icons.send, 'Send Money', onTap: () {})),
               ],
             ),
           )
@@ -197,17 +198,22 @@ class _WalletScreenState extends State<WalletScreen> {
                   ],
                 ),
               ),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(color: Colors.black.withOpacity(0.12), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
-                    SizedBox(width: 8),
-                    Text('ADD MONEY TO MAIN WALLET', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  ],
+              // ✅ JADOO: Yahan B2B ke Add Money button par onGoToAddMoney lag gaya
+              InkWell(
+                onTap: widget.onGoToAddMoney,
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.12), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
+                      SizedBox(width: 8),
+                      Text('ADD MONEY TO MAIN WALLET', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+                    ],
+                  ),
                 ),
               )
             ],
@@ -251,9 +257,9 @@ class _WalletScreenState extends State<WalletScreen> {
                 decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
                 child: Row(
                   children: [
-                    Expanded(child: _cardActionButton(Icons.account_balance, 'Move to Bank', textColor: AppColors.accentColor)),
+                    Expanded(child: _cardActionButton(Icons.account_balance, 'Move to Bank', textColor: AppColors.accentColor, onTap: () {})),
                     Container(width: 1, height: 30, color: Colors.white24),
-                    Expanded(child: _cardActionButton(Icons.swap_horiz, 'Move to Main', textColor: Colors.white)),
+                    Expanded(child: _cardActionButton(Icons.swap_horiz, 'Move to Main', textColor: Colors.white, onTap: () {})),
                   ],
                 ),
               )
@@ -265,9 +271,9 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   // ================= COMMON UI HELPERS =================
-  Widget _cardActionButton(IconData icon, String label, {Color textColor = Colors.white}) {
+  Widget _cardActionButton(IconData icon, String label, {Color textColor = Colors.white, required VoidCallback onTap}) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(

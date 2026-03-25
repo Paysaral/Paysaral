@@ -6,6 +6,7 @@ import 'home_screen.dart';
 import 'wallet_screen.dart';
 import 'reports_screen.dart';
 import 'profile_screen.dart';
+import 'add_money_screen.dart'; // ✅ JADOO 1: Add Money Screen Import ho gayi!
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,6 +17,23 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+  bool isB2B = false; // ✅ JADOO 2: B2B check karne ke liye variable
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserRole();
+  }
+
+  // ✅ Dashboard ko bhi pata chalna chahiye ki user B2B hai ya B2C
+  Future<void> _loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        isB2B = prefs.getBool('isB2B') ?? false;
+      });
+    }
+  }
 
   void _changeTab(int index) {
     setState(() => _currentIndex = index);
@@ -58,6 +76,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     WalletScreen(
                       topPadding: headerHeight,
                       onGoToReports: () => _changeTab(2),
+                      // ✅ JADOO 3: Add Money ka rasta yahan set ho gaya!
+                      onGoToAddMoney: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddMoneyScreen(isB2B: isB2B),
+                          ),
+                        );
+                      },
                     ),
                     ReportsScreen(topPadding: headerHeight),
                     ProfileScreen(topPadding: headerHeight),
