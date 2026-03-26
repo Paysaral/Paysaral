@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:paysaral/main.dart'; // Logout के बाद LoginScreen पर जाने के लिए
 import 'upgrade_retailer_screen.dart';
+import 'my_profile_screen.dart';
+import 'manage_devices_screen.dart'; // ✅ NEW: Manage Devices Screen imported
 import 'app_colors.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isBiometricEnabled = false;
   bool isB2B = false;
-  bool _isLoading = true; // ✅ स्मूथ लोडिंग के लिए
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -25,7 +26,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserRole() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // हल्का सा डिले ताकि स्क्रीन जंप ना मारे
     await Future.delayed(const Duration(milliseconds: 50));
     if (mounted) {
       setState(() {
@@ -38,13 +38,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      // ✅ FIX: यहाँ भी ClampingScrollPhysics लगा दिया ताकि रबर इफ़ेक्ट न आए
       physics: const ClampingScrollPhysics(),
       padding: EdgeInsets.only(
         top: widget.topPadding + 20,
         left: 20, right: 20, bottom: 40,
       ),
-      // ✅ JADOO: AnimatedOpacity लगा दी गई है (तुम्हारा पूरा कोड इसके अंदर है)
       child: AnimatedOpacity(
         opacity: _isLoading ? 0.0 : 1.0,
         duration: const Duration(milliseconds: 300),
@@ -154,7 +152,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Column(
                 children: [
-                  _profileMenuItem(Icons.person_pin_outlined, 'My Profile Information', 'Name, Email, Phone, Address', Colors.orange),
+                  _profileMenuItem(
+                      Icons.person_pin_outlined,
+                      'My Profile Information',
+                      'Name, Email, Phone, Address',
+                      Colors.orange,
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => MyProfileScreen(isB2B: isB2B)));
+                      }
+                  ),
                   _divider(),
                   if (!isB2B) _profileMenuItem(Icons.card_giftcard_rounded, 'Refer & Earn', 'Invite friends and earn cashback', Colors.green),
                   if (!isB2B) _divider(),
@@ -201,7 +207,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _divider(),
                   _profileMenuItem(Icons.lock_outline, 'Change MPIN / Password', 'Update your security pin', Colors.redAccent),
                   _divider(),
-                  _profileMenuItem(Icons.devices, 'Manage Devices', 'Devices logged into your account', Colors.indigo),
+
+                  // ✅ JADOO: Manage Devices ab nayi screen kholega jaha Logout hai!
+                  _profileMenuItem(
+                      Icons.devices,
+                      'Manage Devices',
+                      'Devices logged into your account',
+                      Colors.indigo,
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageDevicesScreen()));
+                      }
+                  ),
+
                   _divider(),
                   _profileMenuItem(Icons.language, 'App Language', 'English, Hindi & more', Colors.lightBlue),
                 ],
@@ -227,22 +244,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             const SizedBox(height: 30),
-
-            // ================= LOGOUT BUTTON =================
-            SizedBox(
-              width: double.infinity, height: 55,
-              child: OutlinedButton.icon(
-                onPressed: () => _logout(context),
-                icon: const Icon(Icons.power_settings_new, color: Colors.red),
-                label: const Text('Logout', style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.w600)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
             const Center(child: Text('App Version 1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12))),
           ],
         ),
@@ -257,36 +258,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _profileMenuItem(IconData icon, String title, String subtitle, Color iconColor) {
+  Widget _profileMenuItem(IconData icon, String title, String subtitle, Color iconColor, {VoidCallback? onTap}) {
     return ListTile(
-      // ✅ FIX: यहाँ vertical: 8 लगा दिया जिससे एकदम मस्त और खुला गैप आ जाएगा
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       leading: Container(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10)
+        ),
         child: Icon(icon, color: iconColor, size: 22),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Colors.black87)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15, color: Colors.black87)),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
       ),
       trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
-      onTap: () {},
+      onTap: onTap ?? () {},
     );
   }
 
-  // ✅ तुम्हारा ओरिजिनल कस्टम एनिमेटेड स्विच विजेट
   Widget _profileSwitchItem(IconData icon, String title, String subtitle, bool value, ValueChanged<bool> onChanged, Color iconColor) {
     return ListTile(
-      // ✅ FIX: यहाँ भी vertical: 8 का गैप
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(color: iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(10)),
         child: Icon(icon, color: iconColor, size: 22),
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Colors.black87)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15, color: Colors.black87)),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
@@ -312,14 +313,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _divider() {
-    // ✅ FIX: लाइन को भी बैलेंस कर दिया (indent 74) ताकि आइकॉन के गैप से मैच कर जाए
     return Divider(height: 1, thickness: 1, color: Colors.grey.shade100, indent: 74, endIndent: 20);
-  }
-
-  void _logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
-    if (!context.mounted) return;
-    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (Route<dynamic> route) => false);
   }
 }

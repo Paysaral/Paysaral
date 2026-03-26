@@ -2,22 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'recharge_history_screen.dart';
-import 'electricity_payment_screen.dart';
+import 'water_payment_screen.dart';
 
-class ElectricityBillScreen extends StatefulWidget {
-  final Map<String, dynamic>? initialDiscom;
+class WaterBillScreen extends StatefulWidget {
+  final Map<String, dynamic>? initialBoard;
 
-  const ElectricityBillScreen({
+  const WaterBillScreen({
     super.key,
-    this.initialDiscom,
+    this.initialBoard,
   });
 
   @override
-  State<ElectricityBillScreen> createState() =>
-      _ElectricityBillScreenState();
+  State<WaterBillScreen> createState() => _WaterBillScreenState();
 }
 
-class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
+class _WaterBillScreenState extends State<WaterBillScreen> {
   final TextEditingController _consumerController = TextEditingController();
   final FocusNode _consumerFocus = FocusNode();
 
@@ -25,50 +24,41 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
   bool _billFetched = false;
   Map<String, dynamic>? fetchedBill;
 
-  late Map<String, dynamic> selectedDiscom;
-  static const int _minDigits = 10;
+  late Map<String, dynamic> selectedBoard;
+  static const int _minDigits = 8;
 
-  final List<Map<String, dynamic>> discoms = [
-    {'name': 'JBVNL', 'fullName': 'Jharkhand Bijli Vitran Nigam Ltd', 'state': 'Jharkhand', 'icon': Icons.bolt_rounded, 'color': Color(0xFF00897B)},
-    {'name': 'SBPDCL', 'fullName': 'South Bihar Power Distribution Co. Ltd', 'state': 'Bihar', 'icon': Icons.electric_meter_rounded, 'color': Color(0xFF1565C0)},
-    {'name': 'NBPDCL', 'fullName': 'North Bihar Power Distribution Co. Ltd', 'state': 'Bihar', 'icon': Icons.electric_meter_rounded, 'color': Color(0xFF0288D1)},
-    {'name': 'UPPCL (Urban)', 'fullName': 'Uttar Pradesh Power Corp Ltd - Urban', 'state': 'Uttar Pradesh', 'icon': Icons.bolt_rounded, 'color': Color(0xFF6A1B9A)},
-    {'name': 'UPPCL (Rural)', 'fullName': 'Uttar Pradesh Power Corp Ltd - Rural', 'state': 'Uttar Pradesh', 'icon': Icons.bolt_rounded, 'color': Color(0xFF7B1FA2)},
-    {'name': 'PVVNL', 'fullName': 'Paschimanchal Vidyut Vitran Nigam Ltd', 'state': 'Uttar Pradesh', 'icon': Icons.electric_bolt_rounded, 'color': Color(0xFF4527A0)},
-    {'name': 'BSES Rajdhani', 'fullName': 'BSES Rajdhani Power Limited', 'state': 'Delhi', 'icon': Icons.location_city_rounded, 'color': Color(0xFFE53935)},
-    {'name': 'BSES Yamuna', 'fullName': 'BSES Yamuna Power Limited', 'state': 'Delhi', 'icon': Icons.location_city_rounded, 'color': Color(0xFFD81B60)},
-    {'name': 'TPDDL', 'fullName': 'Tata Power Delhi Distribution Ltd', 'state': 'Delhi', 'icon': Icons.flash_on_rounded, 'color': Color(0xFF1565C0)},
-    {'name': 'MSEDCL', 'fullName': 'Maharashtra State Electricity Dist. Co.', 'state': 'Maharashtra', 'icon': Icons.bolt_rounded, 'color': Color(0xFFE65100)},
-    {'name': 'TATA Power Mumbai', 'fullName': 'Tata Power Company Ltd - Mumbai', 'state': 'Maharashtra', 'icon': Icons.flash_on_rounded, 'color': Color(0xFF1565C0)},
-    {'name': 'Adani Electricity', 'fullName': 'Adani Electricity Mumbai Ltd', 'state': 'Maharashtra', 'icon': Icons.electric_bolt_rounded, 'color': Color(0xFF2E7D32)},
-    {'name': 'WBSEDCL', 'fullName': 'West Bengal State Electricity Dist. Co.', 'state': 'West Bengal', 'icon': Icons.bolt_rounded, 'color': Color(0xFF00838F)},
-    {'name': 'CESC', 'fullName': 'Calcutta Electric Supply Corp.', 'state': 'West Bengal', 'icon': Icons.electric_meter_rounded, 'color': Color(0xFF37474F)},
-    {'name': 'MPPKVVCL', 'fullName': 'MP Paschim Kshetra Vidyut Vitaran Co.', 'state': 'Madhya Pradesh', 'icon': Icons.bolt_rounded, 'color': Color(0xFFF57F17)},
-    {'name': 'MPEZ', 'fullName': 'MP Poorv Kshetra Vidyut Vitaran Co.', 'state': 'Madhya Pradesh', 'icon': Icons.bolt_rounded, 'color': Color(0xFFF9A825)},
-    {'name': 'JVVNL', 'fullName': 'Jaipur Vidyut Vitran Nigam Ltd', 'state': 'Rajasthan', 'icon': Icons.bolt_rounded, 'color': Color(0xFFBF360C)},
-    {'name': 'AVVNL', 'fullName': 'Ajmer Vidyut Vitran Nigam Ltd', 'state': 'Rajasthan', 'icon': Icons.bolt_rounded, 'color': Color(0xFFD84315)},
-    {'name': 'DGVCL', 'fullName': 'Dakshin Gujarat Vij Co. Ltd', 'state': 'Gujarat', 'icon': Icons.bolt_rounded, 'color': Color(0xFF00695C)},
-    {'name': 'UGVCL', 'fullName': 'Uttar Gujarat Vij Co. Ltd', 'state': 'Gujarat', 'icon': Icons.bolt_rounded, 'color': Color(0xFF00796B)},
-    {'name': 'TPCODL', 'fullName': 'TP Central Odisha Distribution Ltd', 'state': 'Odisha', 'icon': Icons.bolt_rounded, 'color': Color(0xFF558B2F)},
-    {'name': 'TPSODL', 'fullName': 'TP Southern Odisha Distribution Ltd', 'state': 'Odisha', 'icon': Icons.bolt_rounded, 'color': Color(0xFF33691E)},
-    {'name': 'APDCL', 'fullName': 'Assam Power Distribution Co. Ltd', 'state': 'Assam', 'icon': Icons.bolt_rounded, 'color': Color(0xFF4E342E)},
-    {'name': 'UHBVN', 'fullName': 'Uttar Haryana Bijli Vitran Nigam', 'state': 'Haryana', 'icon': Icons.bolt_rounded, 'color': Color(0xFF01579B)},
-    {'name': 'DHBVN', 'fullName': 'Dakshin Haryana Bijli Vitran Nigam', 'state': 'Haryana', 'icon': Icons.bolt_rounded, 'color': Color(0xFF0277BD)},
-    {'name': 'PSPCL', 'fullName': 'Punjab State Power Corp. Ltd', 'state': 'Punjab', 'icon': Icons.bolt_rounded, 'color': Color(0xFF1A237E)},
+  final List<Map<String, dynamic>> waterBoards = [
+    {'name': 'JUSNL', 'fullName': 'Jharkhand Urban Services Nigam Ltd', 'state': 'Jharkhand', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF0288D1)},
+    {'name': 'BUIDCO', 'fullName': 'Bihar Urban Infrastructure Dev Corp', 'state': 'Bihar', 'icon': Icons.water_rounded, 'color': Color(0xFF1565C0)},
+    {'name': 'PHED Bihar', 'fullName': 'Public Health Engg Dept - Bihar', 'state': 'Bihar', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF0277BD)},
+    {'name': 'Delhi Jal Board', 'fullName': 'Delhi Jal Board', 'state': 'Delhi', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF01579B)},
+    {'name': 'MCGM', 'fullName': 'Municipal Corp of Greater Mumbai', 'state': 'Maharashtra', 'icon': Icons.water_rounded, 'color': Color(0xFF1565C0)},
+    {'name': 'PCMC', 'fullName': 'Pimpri Chinchwad Municipal Corp', 'state': 'Maharashtra', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF0288D1)},
+    {'name': 'BWSSB', 'fullName': 'Bangalore Water Supply & Sewerage Board', 'state': 'Karnataka', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF00695C)},
+    {'name': 'HMWSSB', 'fullName': 'Hyderabad Metro Water Supply Board', 'state': 'Telangana', 'icon': Icons.water_rounded, 'color': Color(0xFF00838F)},
+    {'name': 'CMWSSB', 'fullName': 'Chennai Metro Water Supply & Sewerage', 'state': 'Tamil Nadu', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF006064)},
+    {'name': 'KUWS&DB', 'fullName': 'Karnataka Urban Water Supply & Drainage', 'state': 'Karnataka', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF00796B)},
+    {'name': 'GWSSB', 'fullName': 'Gujarat Water Supply & Sewerage Board', 'state': 'Gujarat', 'icon': Icons.water_rounded, 'color': Color(0xFF0277BD)},
+    {'name': 'PHED Rajasthan', 'fullName': 'Public Health Engg Dept - Rajasthan', 'state': 'Rajasthan', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF1976D2)},
+    {'name': 'UPJN', 'fullName': 'Uttar Pradesh Jal Nigam', 'state': 'Uttar Pradesh', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF283593)},
+    {'name': 'LWMC Lucknow', 'fullName': 'Lucknow Water Management Corp', 'state': 'Uttar Pradesh', 'icon': Icons.water_rounded, 'color': Color(0xFF303F9F)},
+    {'name': 'PHED MP', 'fullName': 'Public Health Engg Dept - MP', 'state': 'Madhya Pradesh', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF1565C0)},
+    {'name': 'KMC Water', 'fullName': 'Kolkata Municipal Corp - Water', 'state': 'West Bengal', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF0288D1)},
+    {'name': 'PHED Punjab', 'fullName': 'Public Health Engg Dept - Punjab', 'state': 'Punjab', 'icon': Icons.water_rounded, 'color': Color(0xFF01579B)},
+    {'name': 'PHED Haryana', 'fullName': 'Public Health Engg Dept - Haryana', 'state': 'Haryana', 'icon': Icons.water_drop_rounded, 'color': Color(0xFF0277BD)},
   ];
 
   final List<Map<String, dynamic>> recentPayments = [
-    {'name': 'Home', 'consumer': 'CA123456789', 'discom': 'JBVNL', 'amount': '₹1,250', 'date': '15 Mar 2026'},
-    {'name': 'Office', 'consumer': 'CA987654321', 'discom': 'SBPDCL', 'amount': '₹3,400', 'date': '10 Mar 2026'},
-    {'name': 'Shop', 'consumer': 'CA112233445', 'discom': 'JBVNL', 'amount': '₹890', 'date': '05 Mar 2026'},
+    {'name': 'Home', 'consumer': 'WB12345678', 'board': 'JUSNL', 'amount': '₹450', 'date': '12 Mar 2026'},
+    {'name': 'Office', 'consumer': 'WB98765432', 'board': 'BUIDCO', 'amount': '₹1,200', 'date': '08 Mar 2026'},
   ];
 
-  Map<String, List<Map<String, dynamic>>> get _groupedDiscoms {
+  Map<String, List<Map<String, dynamic>>> get _groupedBoards {
     Map<String, List<Map<String, dynamic>>> grouped = {};
-    for (var d in discoms) {
-      final state = d['state'] as String;
+    for (var b in waterBoards) {
+      final state = b['state'] as String;
       grouped[state] ??= [];
-      grouped[state]!.add(d);
+      grouped[state]!.add(b);
     }
     return grouped;
   }
@@ -76,12 +66,12 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
   @override
   void initState() {
     super.initState();
-    selectedDiscom = widget.initialDiscom ?? {
-      'name': 'JBVNL',
-      'fullName': 'Jharkhand Bijli Vitran Nigam Ltd',
+    selectedBoard = widget.initialBoard ?? {
+      'name': 'JUSNL',
+      'fullName': 'Jharkhand Urban Services Nigam Ltd',
       'state': 'Jharkhand',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF00897B),
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF0288D1),
     };
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _consumerFocus.requestFocus();
@@ -103,8 +93,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
       });
     }
     if (value.length >= _minDigits && !_isFetching) {
-      // ✅ JADOO: Jaise hi 10 digit (minDigits) pure honge, keyboard neeche gir jayega!
-      FocusScope.of(context).unfocus();
+      // ✅ Yahan se Unfocus HATA DIYA HAI. Ab typing disturb nahi hogi.
       _fetchBill();
     }
   }
@@ -116,28 +105,35 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
       _billFetched = false;
       fetchedBill = null;
     });
+
+    // Simulate API delay
     await Future.delayed(const Duration(seconds: 2));
+
     if (!mounted) return;
+
+    // ✅ JADOO: Bill fetch hone ke BAAD keyboard neeche girega.
+    FocusScope.of(context).unfocus();
+
     setState(() {
       _isFetching = false;
       _billFetched = true;
       final text = _consumerController.text;
       fetchedBill = {
-        'consumerName': 'Rajesh Kumar',
+        'consumerName': 'Suresh Prasad',
         'consumerNo': text,
-        'discom': selectedDiscom['name'],
+        'board': selectedBoard['name'],
         'billDate': '01 Mar 2026',
-        'dueDate': '20 Mar 2026',
-        'billAmount': '1,450.00',
-        'units': '245',
+        'dueDate': '25 Mar 2026',
+        'billAmount': '620.00',
+        'usage': '18',
         'billMonth': 'February 2026',
-        'meterNo': 'MTR${text.substring(0, text.length >= 4 ? 4 : text.length)}XXX',
+        'connectionNo': 'CN${text.substring(0, text.length >= 4 ? 4 : text.length)}XXX',
       };
     });
   }
 
-  void _showDiscomSheet(BuildContext context) {
-    final grouped = _groupedDiscoms;
+  void _showBoardSheet(BuildContext context) {
+    final grouped = _groupedBoards;
     final states = grouped.keys.toList();
     showModalBottomSheet(
       context: context,
@@ -169,15 +165,18 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                   const SizedBox(height: 14),
                   const Row(
                     children: [
-                      Icon(Icons.flash_on_rounded, color: AppColors.primaryColor, size: 22),
+                      Icon(Icons.water_drop_rounded,
+                          color: AppColors.primaryColor, size: 22),
                       SizedBox(width: 8),
-                      Text('Select Electricity Board',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('Select Water Board',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('${discoms.length} operators available',
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  Text('${waterBoards.length} boards available',
+                      style: TextStyle(
+                          fontSize: 12, color: Colors.grey.shade500)),
                   const SizedBox(height: 12),
                   Divider(color: Colors.grey.shade100),
                 ],
@@ -190,14 +189,15 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                 itemCount: states.length,
                 itemBuilder: (_, si) {
                   final state = states[si];
-                  final stateDiscoms = grouped[state]!;
+                  final stateBoards = grouped[state]!;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.primaryColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -209,12 +209,12 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                   color: AppColors.primaryColor)),
                         ),
                       ),
-                      ...stateDiscoms.map((d) {
-                        final bool isSel = selectedDiscom['name'] == d['name'];
+                      ...stateBoards.map((b) {
+                        final bool isSel = selectedBoard['name'] == b['name'];
                         return InkWell(
                           onTap: () {
                             setState(() {
-                              selectedDiscom = d;
+                              selectedBoard = b;
                               _billFetched = false;
                               fetchedBill = null;
                             });
@@ -240,18 +240,18 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                 Container(
                                   width: 42, height: 42,
                                   decoration: BoxDecoration(
-                                    color: (d['color'] as Color).withOpacity(0.12),
+                                    color: (b['color'] as Color).withOpacity(0.12),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: Icon(d['icon'] as IconData,
-                                      color: d['color'] as Color, size: 22),
+                                  child: Icon(b['icon'] as IconData,
+                                      color: b['color'] as Color, size: 22),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(d['name'],
+                                      Text(b['name'],
                                           style: TextStyle(
                                               fontWeight: FontWeight.w500,
                                               fontSize: 14,
@@ -259,7 +259,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                                   ? AppColors.primaryColor
                                                   : Colors.black87)),
                                       const SizedBox(height: 2),
-                                      Text(d['fullName'],
+                                      Text(b['fullName'],
                                           style: TextStyle(
                                               fontSize: 11,
                                               color: Colors.grey.shade500),
@@ -301,7 +301,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
           body: CustomScrollView(
             slivers: [
 
-              // ══ HEADER ════════════════════════════
+              // ══ HEADER ════════════════════════════════
               SliverToBoxAdapter(
                 child: Container(
                   decoration: const BoxDecoration(
@@ -322,16 +322,18 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
 
                         // AppBar
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
                           child: Row(
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                                icon: const Icon(
+                                    Icons.arrow_back_ios_new_rounded,
                                     color: Colors.white, size: 20),
                                 onPressed: () => Navigator.pop(context),
                               ),
                               const Expanded(
-                                child: Text('Electricity Bill',
+                                child: Text('Water Bill',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                         color: Colors.white,
@@ -350,7 +352,8 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                 ),
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(
-                                    builder: (_) => const RechargeHistoryScreen(isB2B: true),
+                                    builder: (_) => const RechargeHistoryScreen(
+                                        isB2B: true),
                                   ));
                                 },
                               ),
@@ -358,7 +361,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                           ),
                         ),
 
-                        // Discom + Consumer Card
+                        // Board + Consumer Card
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
                           child: Container(
@@ -376,9 +379,9 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                             child: Column(
                               children: [
 
-                                // Discom Row
+                                // Board Row
                                 InkWell(
-                                  onTap: () => _showDiscomSheet(context),
+                                  onTap: () => _showBoardSheet(context),
                                   borderRadius: const BorderRadius.vertical(
                                       top: Radius.circular(20)),
                                   child: Padding(
@@ -388,28 +391,29 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                         Container(
                                           width: 46, height: 46,
                                           decoration: BoxDecoration(
-                                            color: (selectedDiscom['color'] as Color)
+                                            color: (selectedBoard['color'] as Color)
                                                 .withOpacity(0.12),
                                             borderRadius: BorderRadius.circular(13),
                                           ),
                                           child: Icon(
-                                            selectedDiscom['icon'] as IconData,
-                                            color: selectedDiscom['color'] as Color,
+                                            selectedBoard['icon'] as IconData,
+                                            color: selectedBoard['color'] as Color,
                                             size: 24,
                                           ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                             children: [
-                                              Text(selectedDiscom['name'],
+                                              Text(selectedBoard['name'],
                                                   style: const TextStyle(
                                                       fontWeight: FontWeight.w700,
                                                       fontSize: 15,
                                                       color: Colors.black87)),
                                               const SizedBox(height: 2),
-                                              Text(selectedDiscom['fullName'],
+                                              Text(selectedBoard['fullName'],
                                                   style: TextStyle(
                                                       fontSize: 11,
                                                       color: Colors.grey.shade500),
@@ -422,7 +426,8 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 10, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: AppColors.primaryColor.withOpacity(0.08),
+                                            color: AppColors.primaryColor
+                                                .withOpacity(0.08),
                                             borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: const Row(
@@ -433,8 +438,10 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w600)),
                                               SizedBox(width: 4),
-                                              Icon(Icons.keyboard_arrow_down_rounded,
-                                                  color: AppColors.primaryColor, size: 16),
+                                              Icon(
+                                                  Icons.keyboard_arrow_down_rounded,
+                                                  color: AppColors.primaryColor,
+                                                  size: 16),
                                             ],
                                           ),
                                         ),
@@ -453,11 +460,14 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                       Container(
                                         padding: const EdgeInsets.all(10),
                                         decoration: BoxDecoration(
-                                          color: AppColors.primaryColor.withOpacity(0.08),
+                                          color: AppColors.primaryColor
+                                              .withOpacity(0.08),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
-                                        child: const Icon(Icons.electric_meter_rounded,
-                                            color: AppColors.primaryColor, size: 22),
+                                        child: const Icon(
+                                            Icons.water_drop_rounded,
+                                            color: AppColors.primaryColor,
+                                            size: 22),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
@@ -497,8 +507,10 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                               ),
                                             )
                                                 : _billFetched
-                                                ? const Icon(Icons.check_circle_rounded,
-                                                color: Colors.green, size: 22)
+                                                ? const Icon(
+                                                Icons.check_circle_rounded,
+                                                color: Colors.green,
+                                                size: 22)
                                                 : null,
                                           ),
                                         ),
@@ -507,19 +519,20 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                   ),
                                 ),
 
-                                // Hint text
                                 if (!_isFetching && !_billFetched)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                                     child: Row(
                                       children: [
                                         Icon(Icons.info_outline_rounded,
-                                            size: 13, color: Colors.grey.shade400),
+                                            size: 13,
+                                            color: Colors.grey.shade400),
                                         const SizedBox(width: 6),
                                         Text(
                                           'Bill will auto-fetch after $_minDigits digits',
                                           style: TextStyle(
-                                              fontSize: 11, color: Colors.grey.shade400),
+                                              fontSize: 11,
+                                              color: Colors.grey.shade400),
                                         ),
                                       ],
                                     ),
@@ -534,7 +547,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                 ),
               ),
 
-              // ══ BODY ═════════════════════════════════
+              // ══ BODY ══════════════════════════════════
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
                 sliver: SliverList(
@@ -569,7 +582,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                     color: Colors.grey.shade500,
                                     fontWeight: FontWeight.w500)),
                             const SizedBox(height: 4),
-                            Text(selectedDiscom['name'],
+                            Text(selectedBoard['name'],
                                 style: const TextStyle(
                                     fontSize: 13,
                                     color: AppColors.primaryColor,
@@ -647,17 +660,19 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                 children: [
                                   _billRow('Consumer Name', fetchedBill!['consumerName']),
                                   _billRow('Consumer No.', fetchedBill!['consumerNo']),
-                                  _billRow('Meter No.', fetchedBill!['meterNo']),
-                                  _billRow('Discom', fetchedBill!['discom']),
+                                  _billRow('Connection No.', fetchedBill!['connectionNo']),
+                                  _billRow('Water Board', fetchedBill!['board']),
                                   _billRow('Bill Date', fetchedBill!['billDate']),
                                   _billRow('Due Date', fetchedBill!['dueDate'],
                                       valueColor: const Color(0xFFE53935)),
-                                  _billRow('Units Consumed', '${fetchedBill!['units']} kWh'),
+                                  _billRow('Water Usage',
+                                      '${fetchedBill!['usage']} KL'),
                                   const SizedBox(height: 8),
                                   Divider(color: Colors.grey.shade100),
                                   const SizedBox(height: 8),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       const Text('Total Amount',
                                           style: TextStyle(
@@ -675,7 +690,7 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                               ),
                             ),
 
-                            // ✅ Proceed to Pay Button — FIXED
+                            // Proceed to Pay Button
                             Padding(
                               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                               child: SizedBox(
@@ -683,13 +698,12 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                 height: 52,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    // ✅ YAHAN NAVIGATION HAI
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) => ElectricityPaymentScreen(
+                                        builder: (_) => WaterPaymentScreen(
                                           billData: fetchedBill!,
-                                          discomData: selectedDiscom,
+                                          boardData: selectedBoard,
                                         ),
                                       ),
                                     );
@@ -704,7 +718,10 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                   child: Ink(
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [Color(0xFF00695C), Color(0xFF009688)],
+                                        colors: [
+                                          Color(0xFF00695C),
+                                          Color(0xFF009688)
+                                        ],
                                         begin: Alignment.topLeft,
                                         end: Alignment.bottomRight,
                                       ),
@@ -750,7 +767,8 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                           TextButton(
                             onPressed: () {
                               Navigator.push(context, MaterialPageRoute(
-                                builder: (_) => const RechargeHistoryScreen(isB2B: true),
+                                builder: (_) => const RechargeHistoryScreen(
+                                    isB2B: true),
                               ));
                             },
                             child: const Text('See All →',
@@ -788,16 +806,18 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                       color: AppColors.primaryColor.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(13),
                                     ),
-                                    child: const Icon(Icons.lightbulb_rounded,
+                                    child: const Icon(Icons.water_drop_rounded,
                                         color: AppColors.primaryColor, size: 22),
                                   ),
                                   title: Text(r['name'],
                                       style: const TextStyle(
-                                          fontWeight: FontWeight.w400, fontSize: 14)),
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 14)),
                                   subtitle: Text(
-                                      '${r['consumer']} • ${r['discom']}',
+                                      '${r['consumer']} • ${r['board']}',
                                       style: TextStyle(
-                                          fontSize: 12, color: Colors.grey.shade500)),
+                                          fontSize: 12,
+                                          color: Colors.grey.shade500)),
                                   trailing: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -813,10 +833,10 @@ class _ElectricityBillScreenState extends State<ElectricityBillScreen> {
                                               color: Colors.grey.shade400)),
                                     ],
                                   ),
-                                  // ✅ JADOO: Recent bill pe tap karte hi keyboard bhi girega aur bill fetch hoga!
+                                  // ✅ JADOO: Recent par click karne se bhi keyboard hat jayega
                                   onTap: () {
                                     _consumerController.text = r['consumer'];
-                                    FocusScope.of(context).unfocus(); // Keyboard dismiss
+                                    FocusScope.of(context).unfocus();
                                     _onConsumerChanged(r['consumer']);
                                   },
                                 ),

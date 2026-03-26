@@ -430,7 +430,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
       ),
       title: Text(title,
           style: const TextStyle(
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
               fontSize: 15,
               color: Colors.black87)),
       subtitle: Padding(

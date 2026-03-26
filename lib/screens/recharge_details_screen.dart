@@ -14,7 +14,6 @@ class RechargeDetailsScreen extends StatefulWidget {
   final String operatorLogoText;
   final Color operatorLogoBg;
 
-  // ✅ JADOO: All parameters OPTIONAL. Kabhi Error nahi aayega.
   const RechargeDetailsScreen({
     super.key,
     this.isB2B = false,
@@ -41,7 +40,6 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
   void initState() {
     super.initState();
 
-    // ✅ Asli PEN se Draw karne wala lagatar animation (No reverse)
     _drawController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
@@ -61,7 +59,6 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
     super.dispose();
   }
 
-  // ✅ Dynamic text generator
   String _getSuccessTitle() {
     switch (widget.category) {
       case 'Electricity': return 'Electricity Bill Paid!';
@@ -98,7 +95,7 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
         body: Column(
           children: [
 
-            // ✅ FIXED HEADER
+            // ══ FIXED HEADER ══
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -142,7 +139,7 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
 
                   const SizedBox(height: 14),
 
-                  // ✅ Success Icon (PERFECT TICK DRAWING)
+                  // Success Icon
                   Container(
                     width: 66,
                     height: 66,
@@ -169,7 +166,6 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
 
                   const SizedBox(height: 10),
 
-                  // ✅ Dynamic Title
                   Text(_getSuccessTitle(),
                       style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
 
@@ -209,15 +205,15 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
               ),
             ),
 
-            // ✅ SCROLLABLE CONTENT
+            // ══ SCROLLABLE CONTENT ══
             Expanded(
               child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(), // no bounce
+                physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
                 child: Column(
                   children: [
 
-                    // ✅ RECEIPT CARD
+                    // RECEIPT CARD
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -229,7 +225,7 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
                       child: Column(
                         children: [
 
-                          // ✅ Operator Banner (With Logo Text)
+                          // Operator Banner
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -275,7 +271,7 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
 
                           _dashedDivider(),
 
-                          // ✅ Detail Rows
+                          // Detail Rows
                           Padding(
                             padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                             child: Column(
@@ -287,87 +283,89 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
                                 _row('Amount Paid', '₹ ${widget.amount}', valueColor: AppColors.primaryColor, isBold: true),
                                 _thinDivider(),
 
-                                // ✅ JADOO: Strict B2B check for text & color
-                                widget.isB2B
-                                    ? _row('Commission Earned', '+ ₹ ${widget.rewardAmount}', valueColor: Colors.green, isBold: true)
-                                    : _row('Cashback Earned', '+ ₹ ${widget.rewardAmount}', valueColor: Colors.orange.shade600, isBold: true),
+                                // ✅ JADOO: INCOME PRIVACY APPLIED!
+                                if (!widget.isB2B) ...[
+                                  _row('Cashback Earned', '+ ₹ ${widget.rewardAmount}', valueColor: Colors.orange.shade600, isBold: true),
+                                  _thinDivider(),
+                                ],
 
-                                _thinDivider(),
                                 _row('Payment Mode', 'Wallet Balance'),
                                 _thinDivider(),
-                                _row('Remark', _getRemarkText()), // ✅ Dynamic Remark
+                                _row('Remark', _getRemarkText()),
                               ],
                             ),
                           ),
 
-                          _dashedDivider(),
-
-                          // ✅ Commission / Cashback Badge
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: widget.isB2B
-                                      ? [const Color(0xFFE8F5F3), const Color(0xFFF0FFF8)]
-                                      : [const Color(0xFFFFF8E1), const Color(0xFFFFF3E0)],
+                          // ✅ JADOO: INCOME PRIVACY APPLIED!
+                          if (!widget.isB2B) ...[
+                            _dashedDivider(),
+                            // Cashback Badge (Only for B2C)
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFFFF8E1), Color(0xFFFFF3E0)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: Colors.orange.withOpacity(0.25),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: widget.isB2B ? AppColors.primaryColor.withOpacity(0.15) : Colors.orange.withOpacity(0.25),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.withOpacity(0.15),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Icons.stars_rounded,
+                                        color: Colors.orange.shade600,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Cashback Credited!',
+                                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '₹${widget.rewardAmount} cashback added!',
+                                            style: const TextStyle(fontSize: 11.5, color: Colors.grey),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Text(
+                                      '+ ₹${widget.rewardAmount}',
+                                      style: TextStyle(
+                                        color: Colors.orange.shade600,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: widget.isB2B ? AppColors.accentColor.withOpacity(0.15) : Colors.orange.withOpacity(0.15),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      widget.isB2B ? Icons.savings_rounded : Icons.stars_rounded,
-                                      color: widget.isB2B ? AppColors.accentColor : Colors.orange.shade600,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          widget.isB2B ? 'Commission Credited!' : 'Cashback Credited!',
-                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          widget.isB2B ? '₹${widget.rewardAmount} added to your wallet' : '₹${widget.rewardAmount} cashback added!',
-                                          style: const TextStyle(fontSize: 11.5, color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Text(
-                                    '+ ₹${widget.rewardAmount}',
-                                    style: TextStyle(
-                                      color: widget.isB2B ? Colors.green : Colors.orange.shade600,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
                               ),
                             ),
-                          ),
+                          ] else ...[
+                            const SizedBox(height: 12), // Give some spacing if B2B badge is hidden
+                          ],
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 20),
 
-                    // ✅ SSL Badge
+                    // SSL Badge
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -383,7 +381,7 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
           ],
         ),
 
-        // ✅ BOTTOM ACTION BAR
+        // ══ BOTTOM ACTION BAR ══
         bottomNavigationBar: Container(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
           decoration: BoxDecoration(
@@ -494,7 +492,6 @@ class _RechargeDetailsScreenState extends State<RechargeDetailsScreen> with Sing
   }
 }
 
-// ✅ THE PERFECT TICK SHAPE
 class TickPainter extends CustomPainter {
   final double progress;
 

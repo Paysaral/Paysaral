@@ -6,14 +6,18 @@ import 'app_colors.dart';
 import 'mobile_recharge_screen.dart';
 import 'dth_recharge_screen.dart';
 import 'electricity_bill_screen.dart';
-import 'transaction_history_screen.dart';
+import 'transaction_history_screen.dart'; // ✅ Asli Ledger Screen
 import 'add_money_screen.dart';
 import 'electricity_operator_screen.dart';
 import 'recharge_history_screen.dart';
+import 'water_operator_screen.dart';
+import 'gas_operator_screen.dart'; // ✅ Gas Operator Import
+import 'fastag_operator_screen.dart'; // ✅ Fastag Operator Import
+import 'credit_card_operator_screen.dart'; // ✅ Credit Card Operator Import lag gaya!
 
 class HomeScreen extends StatefulWidget {
   final double topPadding;
-  final bool isB2B; // ✅ JADOO 2: Ab yeh parameter lega!
+  final bool isB2B;
   const HomeScreen({super.key, required this.topPadding, this.isB2B = false});
 
   @override
@@ -79,14 +83,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    isB2B = widget.isB2B; // Initializing from parent
+    isB2B = widget.isB2B;
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      isB2B = prefs.getBool('isB2B') ?? widget.isB2B; // Safely taking value
+      isB2B = prefs.getBool('isB2B') ?? widget.isB2B;
       for (var section in categorySections) {
         section['isPinned'] = prefs.getBool('pinned_${section['id']}') ?? false;
       }
@@ -120,6 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
 
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(), // Premium smooth scrolling
       padding: EdgeInsets.only(top: widget.topPadding - 2, bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,22 +182,20 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _topActionIcon(Icons.add_card, 'Add Money', onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AddMoneyScreen(isB2B: isB2B),
-                    ));
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => AddMoneyScreen(isB2B: isB2B),
+                ));
               }),
               _topActionIcon(Icons.send_to_mobile, 'To Mobile', onTap: () {}),
               _topActionIcon(Icons.account_balance, 'To Bank', onTap: () {}),
+
+              // ✅ JADOO: History button ab TransactionHistoryScreen kholta hai
               _topActionIcon(Icons.history_edu, 'History', onTap: () {
-                // ✅ JADOO: History Screen me bhi B2B bhej diya!
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => RechargeHistoryScreen(
-                          isB2B: isB2B,
-                        )));
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => TransactionHistoryScreen(
+                        pageTitle: 'Transaction History',
+                        isB2B: isB2B
+                    )));
               }),
             ],
           ),
@@ -260,8 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Stack(
               children: [
                 Positioned(
-                    right: -10,
-                    bottom: -10,
+                    right: -10, bottom: -10,
                     child: Icon(Icons.campaign,
                         color: Colors.white.withOpacity(0.2), size: 90)),
                 Padding(
@@ -432,25 +434,36 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    // ✅ JADOO: Ab har screen ke paas tumhara status (B2B/B2C) pohoch jayega!
+                    // ✅ NAVIGATION (Sari screens connect ho chuki hain)
                     if (services[index]['name'] == 'Mobile') {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  MobileRechargeScreen(isB2B: isB2B)));
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                              MobileRechargeScreen(isB2B: isB2B)));
                     } else if (services[index]['name'] == 'DTH') {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  DthRechargeScreen(isB2B: isB2B))); // ✅ Added here too
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                              DthRechargeScreen(isB2B: isB2B)));
                     } else if (services[index]['name'] == 'Electricity') {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                              const ElectricityOperatorScreen()));
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                          const ElectricityOperatorScreen()));
+                    } else if (services[index]['name'] == 'Water') {
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                          const WaterOperatorScreen()));
+                    } else if (services[index]['name'] == 'Gas') {
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                          const GasOperatorScreen()));
+                    } else if (services[index]['name'] == 'Fastag') {
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                          const FastagOperatorScreen()));
+                    } else if (services[index]['name'] == 'Credit Card') {
+                      // ✅ JADOO: Credit Card ka link yahan lag gaya hai!
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) =>
+                          const CreditCardOperatorScreen()));
                     }
                   },
                   child: Column(

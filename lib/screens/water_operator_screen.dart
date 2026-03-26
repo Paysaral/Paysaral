@@ -1,243 +1,186 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
-import 'electricity_bill_screen.dart';
+import 'water_bill_screen.dart';
 
-class ElectricityOperatorScreen extends StatefulWidget {
-  const ElectricityOperatorScreen({super.key});
+class WaterOperatorScreen extends StatefulWidget {
+  const WaterOperatorScreen({super.key});
 
   @override
-  State<ElectricityOperatorScreen> createState() =>
-      _ElectricityOperatorScreenState();
+  State<WaterOperatorScreen> createState() => _WaterOperatorScreenState();
 }
 
-class _ElectricityOperatorScreenState
-    extends State<ElectricityOperatorScreen> {
+class _WaterOperatorScreenState extends State<WaterOperatorScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  final List<Map<String, dynamic>> discoms = [
+  final List<Map<String, dynamic>> waterBoards = [
     // Jharkhand
     {
-      'name': 'JBVNL',
-      'fullName': 'Jharkhand Bijli Vitran Nigam Ltd',
+      'name': 'JUSNL',
+      'fullName': 'Jharkhand Urban Services Nigam Ltd',
       'state': 'Jharkhand',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF00897B),
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF0288D1),
     },
     // Bihar
     {
-      'name': 'SBPDCL',
-      'fullName': 'South Bihar Power Distribution Co. Ltd',
+      'name': 'BUIDCO',
+      'fullName': 'Bihar Urban Infrastructure Dev Corp',
       'state': 'Bihar',
-      'icon': Icons.electric_meter_rounded,
+      'icon': Icons.water_rounded,
       'color': Color(0xFF1565C0),
     },
     {
-      'name': 'NBPDCL',
-      'fullName': 'North Bihar Power Distribution Co. Ltd',
+      'name': 'PHED Bihar',
+      'fullName': 'Public Health Engg Dept - Bihar',
       'state': 'Bihar',
-      'icon': Icons.electric_meter_rounded,
-      'color': Color(0xFF0288D1),
-    },
-    // Uttar Pradesh
-    {
-      'name': 'UPPCL (Urban)',
-      'fullName': 'Uttar Pradesh Power Corp Ltd - Urban',
-      'state': 'Uttar Pradesh',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF6A1B9A),
-    },
-    {
-      'name': 'UPPCL (Rural)',
-      'fullName': 'Uttar Pradesh Power Corp Ltd - Rural',
-      'state': 'Uttar Pradesh',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF7B1FA2),
-    },
-    {
-      'name': 'PVVNL',
-      'fullName': 'Paschimanchal Vidyut Vitran Nigam Ltd',
-      'state': 'Uttar Pradesh',
-      'icon': Icons.electric_bolt_rounded,
-      'color': Color(0xFF4527A0),
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF0277BD),
     },
     // Delhi
     {
-      'name': 'BSES Rajdhani',
-      'fullName': 'BSES Rajdhani Power Limited',
+      'name': 'Delhi Jal Board',
+      'fullName': 'Delhi Jal Board',
       'state': 'Delhi',
-      'icon': Icons.location_city_rounded,
-      'color': Color(0xFFE53935),
-    },
-    {
-      'name': 'BSES Yamuna',
-      'fullName': 'BSES Yamuna Power Limited',
-      'state': 'Delhi',
-      'icon': Icons.location_city_rounded,
-      'color': Color(0xFFD81B60),
-    },
-    {
-      'name': 'TPDDL',
-      'fullName': 'Tata Power Delhi Distribution Ltd',
-      'state': 'Delhi',
-      'icon': Icons.flash_on_rounded,
-      'color': Color(0xFF1565C0),
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF01579B),
     },
     // Maharashtra
     {
-      'name': 'MSEDCL',
-      'fullName': 'Maharashtra State Electricity Dist. Co.',
+      'name': 'MCGM',
+      'fullName': 'Municipal Corp of Greater Mumbai',
       'state': 'Maharashtra',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFFE65100),
-    },
-    {
-      'name': 'TATA Power Mumbai',
-      'fullName': 'Tata Power Company Ltd - Mumbai',
-      'state': 'Maharashtra',
-      'icon': Icons.flash_on_rounded,
+      'icon': Icons.water_rounded,
       'color': Color(0xFF1565C0),
     },
     {
-      'name': 'Adani Electricity',
-      'fullName': 'Adani Electricity Mumbai Ltd',
+      'name': 'PCMC',
+      'fullName': 'Pimpri Chinchwad Municipal Corp',
       'state': 'Maharashtra',
-      'icon': Icons.electric_bolt_rounded,
-      'color': Color(0xFF2E7D32),
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF0288D1),
     },
-    // West Bengal
+    // Karnataka
     {
-      'name': 'WBSEDCL',
-      'fullName': 'West Bengal State Electricity Dist. Co.',
-      'state': 'West Bengal',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF00838F),
-    },
-    {
-      'name': 'CESC',
-      'fullName': 'Calcutta Electric Supply Corp.',
-      'state': 'West Bengal',
-      'icon': Icons.electric_meter_rounded,
-      'color': Color(0xFF37474F),
-    },
-    // Madhya Pradesh
-    {
-      'name': 'MPPKVVCL',
-      'fullName': 'MP Paschim Kshetra Vidyut Vitaran Co.',
-      'state': 'Madhya Pradesh',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFFF57F17),
-    },
-    {
-      'name': 'MPEZ',
-      'fullName': 'MP Poorv Kshetra Vidyut Vitaran Co.',
-      'state': 'Madhya Pradesh',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFFF9A825),
-    },
-    // Rajasthan
-    {
-      'name': 'JVVNL',
-      'fullName': 'Jaipur Vidyut Vitran Nigam Ltd',
-      'state': 'Rajasthan',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFFBF360C),
-    },
-    {
-      'name': 'AVVNL',
-      'fullName': 'Ajmer Vidyut Vitran Nigam Ltd',
-      'state': 'Rajasthan',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFFD84315),
-    },
-    // Gujarat
-    {
-      'name': 'DGVCL',
-      'fullName': 'Dakshin Gujarat Vij Co. Ltd',
-      'state': 'Gujarat',
-      'icon': Icons.bolt_rounded,
+      'name': 'BWSSB',
+      'fullName': 'Bangalore Water Supply & Sewerage Board',
+      'state': 'Karnataka',
+      'icon': Icons.water_drop_rounded,
       'color': Color(0xFF00695C),
     },
     {
-      'name': 'UGVCL',
-      'fullName': 'Uttar Gujarat Vij Co. Ltd',
-      'state': 'Gujarat',
-      'icon': Icons.bolt_rounded,
+      'name': 'KUWS&DB',
+      'fullName': 'Karnataka Urban Water Supply & Drainage',
+      'state': 'Karnataka',
+      'icon': Icons.water_drop_rounded,
       'color': Color(0xFF00796B),
     },
-    // Odisha
+    // Telangana
     {
-      'name': 'TPCODL',
-      'fullName': 'TP Central Odisha Distribution Ltd',
-      'state': 'Odisha',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF558B2F),
+      'name': 'HMWSSB',
+      'fullName': 'Hyderabad Metro Water Supply Board',
+      'state': 'Telangana',
+      'icon': Icons.water_rounded,
+      'color': Color(0xFF00838F),
     },
+    // Tamil Nadu
     {
-      'name': 'TPSODL',
-      'fullName': 'TP Southern Odisha Distribution Ltd',
-      'state': 'Odisha',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF33691E),
+      'name': 'CMWSSB',
+      'fullName': 'Chennai Metro Water Supply & Sewerage',
+      'state': 'Tamil Nadu',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF006064),
     },
-    // Assam
+    // Gujarat
     {
-      'name': 'APDCL',
-      'fullName': 'Assam Power Distribution Co. Ltd',
-      'state': 'Assam',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF4E342E),
-    },
-    // Haryana
-    {
-      'name': 'UHBVN',
-      'fullName': 'Uttar Haryana Bijli Vitran Nigam',
-      'state': 'Haryana',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF01579B),
-    },
-    {
-      'name': 'DHBVN',
-      'fullName': 'Dakshin Haryana Bijli Vitran Nigam',
-      'state': 'Haryana',
-      'icon': Icons.bolt_rounded,
+      'name': 'GWSSB',
+      'fullName': 'Gujarat Water Supply & Sewerage Board',
+      'state': 'Gujarat',
+      'icon': Icons.water_rounded,
       'color': Color(0xFF0277BD),
+    },
+    // Rajasthan
+    {
+      'name': 'PHED Rajasthan',
+      'fullName': 'Public Health Engg Dept - Rajasthan',
+      'state': 'Rajasthan',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF1976D2),
+    },
+    // Uttar Pradesh
+    {
+      'name': 'UPJN',
+      'fullName': 'Uttar Pradesh Jal Nigam',
+      'state': 'Uttar Pradesh',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF283593),
+    },
+    {
+      'name': 'LWMC Lucknow',
+      'fullName': 'Lucknow Water Management Corp',
+      'state': 'Uttar Pradesh',
+      'icon': Icons.water_rounded,
+      'color': Color(0xFF303F9F),
+    },
+    // Madhya Pradesh
+    {
+      'name': 'PHED MP',
+      'fullName': 'Public Health Engg Dept - MP',
+      'state': 'Madhya Pradesh',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF1565C0),
+    },
+    // West Bengal
+    {
+      'name': 'KMC Water',
+      'fullName': 'Kolkata Municipal Corp - Water',
+      'state': 'West Bengal',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF0288D1),
     },
     // Punjab
     {
-      'name': 'PSPCL',
-      'fullName': 'Punjab State Power Corp. Ltd',
+      'name': 'PHED Punjab',
+      'fullName': 'Public Health Engg Dept - Punjab',
       'state': 'Punjab',
-      'icon': Icons.bolt_rounded,
-      'color': Color(0xFF1A237E),
+      'icon': Icons.water_rounded,
+      'color': Color(0xFF01579B),
+    },
+    // Haryana
+    {
+      'name': 'PHED Haryana',
+      'fullName': 'Public Health Engg Dept - Haryana',
+      'state': 'Haryana',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF0277BD),
     },
   ];
 
-  List<Map<String, dynamic>> get _filteredDiscoms {
-    if (_searchQuery.isEmpty) return discoms;
-    return discoms.where((d) {
-      return d['name']
+  List<Map<String, dynamic>> get _filteredBoards {
+    if (_searchQuery.isEmpty) return waterBoards;
+    return waterBoards.where((b) {
+      return b['name']
           .toString()
           .toLowerCase()
           .contains(_searchQuery.toLowerCase()) ||
-          d['fullName']
+          b['fullName']
               .toString()
               .toLowerCase()
               .contains(_searchQuery.toLowerCase()) ||
-          d['state']
+          b['state']
               .toString()
               .toLowerCase()
               .contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
-  Map<String, List<Map<String, dynamic>>> get _groupedDiscoms {
+  Map<String, List<Map<String, dynamic>>> get _groupedBoards {
     Map<String, List<Map<String, dynamic>>> grouped = {};
-    for (var d in _filteredDiscoms) {
-      final state = d['state'] as String;
+    for (var b in _filteredBoards) {
+      final state = b['state'] as String;
       grouped[state] ??= [];
-      grouped[state]!.add(d);
+      grouped[state]!.add(b);
     }
     return grouped;
   }
@@ -269,12 +212,10 @@ class _ElectricityOperatorScreenState
           children: [
             Text('Powered by', style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w500)),
             const SizedBox(width: 8),
-            // Height 32 ke sath bada logo
             Image.asset(
               'assets/images/bharat_connect.png',
               height: 32,
               errorBuilder: (context, error, stackTrace) {
-                // Fallback agar image folder me na ho
                 return Row(
                   children: [
                     const Icon(Icons.hub_rounded, color: Color(0xFF003A70), size: 20),
@@ -293,7 +234,7 @@ class _ElectricityOperatorScreenState
 
   @override
   Widget build(BuildContext context) {
-    final grouped = _groupedDiscoms;
+    final grouped = _groupedBoards;
     final states = grouped.keys.toList();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -303,8 +244,7 @@ class _ElectricityOperatorScreenState
       ),
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7FA),
-        // ✅ Ye raha tumhara fixed bottom navigation bar
-        bottomNavigationBar: _buildFixedBharatConnectFooter(),
+        bottomNavigationBar: _buildFixedBharatConnectFooter(), // ✅ Logo fix ho gaya
         body: Column(
           children: [
 
@@ -341,7 +281,7 @@ class _ElectricityOperatorScreenState
                           ),
                           const Expanded(
                             child: Text(
-                              'Electricity Bill',
+                              'Water Bill',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                   color: Colors.white,
@@ -365,7 +305,7 @@ class _ElectricityOperatorScreenState
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: const Icon(Icons.flash_on_rounded,
+                            child: const Icon(Icons.water_drop_rounded,
                                 color: Colors.white, size: 26),
                           ),
                           const SizedBox(width: 14),
@@ -373,14 +313,14 @@ class _ElectricityOperatorScreenState
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Select Your Operator',
+                                'Select Your Water Board',
                                 style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700),
                               ),
                               Text(
-                                '${discoms.length} boards across India',
+                                '${waterBoards.length} boards across India',
                                 style: const TextStyle(
                                     color: Colors.white70,
                                     fontSize: 12),
@@ -423,8 +363,7 @@ class _ElectricityOperatorScreenState
                                 style: const TextStyle(
                                     fontSize: 14, color: Colors.black87),
                                 decoration: InputDecoration(
-                                  hintText:
-                                  'Search operator or state...',
+                                  hintText: 'Search board or state...',
                                   hintStyle: TextStyle(
                                       color: Colors.grey.shade400,
                                       fontSize: 14),
@@ -453,7 +392,7 @@ class _ElectricityOperatorScreenState
 
             // ══ LIST ══════════════════════════════════
             Expanded(
-              child: _filteredDiscoms.isEmpty
+              child: _filteredBoards.isEmpty
                   ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -462,7 +401,7 @@ class _ElectricityOperatorScreenState
                         size: 60,
                         color: Colors.grey.shade300),
                     const SizedBox(height: 12),
-                    Text('No operator found',
+                    Text('No board found',
                         style: TextStyle(
                             color: Colors.grey.shade400,
                             fontSize: 15)),
@@ -470,12 +409,12 @@ class _ElectricityOperatorScreenState
                 ),
               )
                   : ListView.builder(
-                physics: const ClampingScrollPhysics(), // Smooth scrolling effect
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+                padding:
+                const EdgeInsets.fromLTRB(20, 20, 20, 40),
                 itemCount: states.length,
                 itemBuilder: (_, si) {
                   final state = states[si];
-                  final stateDiscoms = grouped[state]!;
+                  final stateBoards = grouped[state]!;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -483,17 +422,14 @@ class _ElectricityOperatorScreenState
 
                       // State Header
                       Padding(
-                        padding:
-                        const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.only(bottom: 12),
                         child: Row(
                           children: [
                             Container(
-                              width: 4,
-                              height: 18,
+                              width: 4, height: 18,
                               decoration: BoxDecoration(
                                 color: AppColors.primaryColor,
-                                borderRadius:
-                                BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -507,17 +443,15 @@ class _ElectricityOperatorScreenState
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              padding:
-                              const EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.primaryColor
                                     .withOpacity(0.1),
-                                borderRadius:
-                                BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                '${stateDiscoms.length}',
+                                '${stateBoards.length}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
@@ -529,8 +463,8 @@ class _ElectricityOperatorScreenState
                         ),
                       ),
 
-                      // Operator Cards
-                      ...stateDiscoms.map((d) => _buildOperatorCard(d)),
+                      // Board Cards
+                      ...stateBoards.map((b) => _buildBoardCard(b)),
 
                       const SizedBox(height: 20),
                     ],
@@ -544,16 +478,16 @@ class _ElectricityOperatorScreenState
     );
   }
 
-  Widget _buildOperatorCard(Map<String, dynamic> d) {
-    final Color color = d['color'] as Color;
+  Widget _buildBoardCard(Map<String, dynamic> b) {
+    final Color color = b['color'] as Color;
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ElectricityBillScreen(
-              initialDiscom: d,
+            builder: (_) => WaterBillScreen(
+              initialBoard: b,
             ),
           ),
         );
@@ -577,14 +511,12 @@ class _ElectricityOperatorScreenState
 
             // Icon Box
             Container(
-              width: 56,
-              height: 56,
+              width: 56, height: 56,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(d['icon'] as IconData,
-                  color: color, size: 28),
+              child: Icon(b['icon'] as IconData, color: color, size: 28),
             ),
 
             const SizedBox(width: 16),
@@ -595,7 +527,7 @@ class _ElectricityOperatorScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    d['name'],
+                    b['name'],
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
@@ -604,7 +536,7 @@ class _ElectricityOperatorScreenState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    d['fullName'],
+                    b['fullName'],
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey.shade500,
@@ -619,8 +551,7 @@ class _ElectricityOperatorScreenState
 
             // Arrow
             Container(
-              width: 34,
-              height: 34,
+              width: 34, height: 34,
               decoration: BoxDecoration(
                 color: color.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(10),
