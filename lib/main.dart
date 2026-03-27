@@ -77,7 +77,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
       if (isLoggedIn) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+        // ✅ JADOO: Removed 'const' from DashboardScreen
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardScreen()));
       } else {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
       }
@@ -281,7 +282,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     SharedPreferences prefs = await SharedPreferences.getInstance();
                                     String userMobile = _mobile.text.trim();
 
-                                    // ✅ JADOO YAHAN HAI: Login check logic
                                     await prefs.setString('currentUser', userMobile);
                                     await prefs.setBool('isLoggedIn', true);
 
@@ -292,7 +292,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(content: Text('Login Successful! 🎉'), backgroundColor: Color(0xFF009688), duration: Duration(seconds: 1))
                                     );
-                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+                                    // ✅ JADOO: Removed 'const' from DashboardScreen
+                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardScreen()));
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -580,7 +581,6 @@ class _BasicRegisterStep2State extends State<BasicRegisterStep2> {
                                     if (_formKey.currentState!.validate() && _agree) {
                                       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-                                      // ✅ JADOO: नया रजिस्ट्रेशन हमेशा B2C होगा
                                       await prefs.setString('currentUser', widget.mobile);
                                       await prefs.setBool('role_${widget.mobile}', false);
                                       await prefs.setBool('isLoggedIn', true);
@@ -590,7 +590,8 @@ class _BasicRegisterStep2State extends State<BasicRegisterStep2> {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(content: Text('Account Created Successfully! 🎉'), backgroundColor: Color(0xFF009688))
                                       );
-                                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const DashboardScreen()), (route) => false);
+                                      // ✅ JADOO: Removed 'const' from DashboardScreen
+                                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => DashboardScreen()), (route) => false);
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(

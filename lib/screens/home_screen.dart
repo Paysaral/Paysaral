@@ -3,6 +3,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 
+import 'aeps_selection_sheet.dart'; // ✅ JADOO: Sirf AEPS sheet ka import joda hai
+
 import 'mobile_recharge_screen.dart';
 import 'dth_recharge_screen.dart';
 import 'electricity_bill_screen.dart';
@@ -434,8 +436,11 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    // ✅ NAVIGATION (Sari screens connect ho chuki hain)
-                    if (services[index]['name'] == 'Mobile') {
+                    // ✅ NAVIGATION (Sari screens connect ho chuki hain, aur ab AEPS bhi)
+                    if (services[index]['name'] == 'AEPS') {
+                      // ✅ Yahan humne aapki alag ki hui AEPS file call kardi hai
+                      showAepsSelectionSheet(context, isB2B);
+                    } else if (services[index]['name'] == 'Mobile') {
                       Navigator.push(context, MaterialPageRoute(
                           builder: (context) =>
                               MobileRechargeScreen(isB2B: isB2B)));
@@ -460,7 +465,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (context) =>
                           const FastagOperatorScreen()));
                     } else if (services[index]['name'] == 'Credit Card') {
-                      // ✅ JADOO: Credit Card ka link yahan lag gaya hai!
                       Navigator.push(context, MaterialPageRoute(
                           builder: (context) =>
                           const CreditCardOperatorScreen()));
