@@ -411,82 +411,84 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
   }
 
   // ══════════════════════════════════════
-  // SCREEN 1 (Select Operator)
+  // SCREEN 1 (Select Operator) - Fixed Top
   // ══════════════════════════════════════
   Widget _buildScreen1() {
-    return CustomScrollView(
+    return Column(
       key: const ValueKey('screen1'),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF00695C), Color(0xFF009688)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(36),
-                bottomRight: Radius.circular(36),
-              ),
+      children: [
+        // FIXED HERO TOP
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF00695C), Color(0xFF009688)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 6),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              color: Colors.white, size: 20),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        const Expanded(
-                          child: Text('DTH Recharge',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700)),
-                        ),
-                        IconButton(
-                          icon: Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.history_rounded,
-                                color: Colors.white, size: 18),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(36),
+              bottomRight: Radius.circular(36),
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 6),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white, size: 20),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Text('DTH Recharge',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                      IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
-                              ),
-                            );
-                          },
+                          child: const Icon(Icons.history_rounded,
+                              color: Colors.white, size: 18),
                         ),
-                      ],
-                    ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
-                    child: _buildBannerSlider(),
-                  ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+                  child: _buildBannerSlider(),
+                ),
+              ],
             ),
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-          sliver: SliverToBoxAdapter(
+
+        // SCROLLABLE LIST
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+            physics: const ClampingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -565,457 +567,462 @@ class _DthRechargeScreenState extends State<DthRechargeScreen> {
   }
 
   // ══════════════════════════════════════
-  // SCREEN 2 (Enter ID and Amount)
+  // SCREEN 2 (Enter ID and Amount) - Fixed Top
   // ══════════════════════════════════════
   Widget _buildScreen2() {
     var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
 
-    return CustomScrollView(
+    return Column(
       key: const ValueKey('screen2'),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF00695C), Color(0xFF009688)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(36),
-                bottomRight: Radius.circular(36),
-              ),
+      children: [
+        // FIXED HERO TOP
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF00695C), Color(0xFF009688)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 6),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              color: Colors.white, size: 20),
-                          onPressed: () => setState(() {
-                            _operatorSelected = false;
-                            _idController.clear();
-                            _amountController.clear();
-                          }),
-                        ),
-                        const Expanded(
-                          child: Text('DTH Recharge',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700)),
-                        ),
-                        IconButton(
-                          icon: Container(
-                            padding: const EdgeInsets.all(7),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(Icons.history_rounded,
-                                color: Colors.white, size: 18),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(36),
+              bottomRight: Radius.circular(36),
+            ),
+          ),
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 6),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white, size: 20),
+                        onPressed: () => setState(() {
+                          _operatorSelected = false;
+                          _idController.clear();
+                          _amountController.clear();
+                        }),
+                      ),
+                      const Expanded(
+                        child: Text('DTH Recharge',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700)),
+                      ),
+                      IconButton(
+                        icon: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
+                          child: const Icon(Icons.history_rounded,
+                              color: Colors.white, size: 18),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primaryColor.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.tv_rounded,
+                                    color: AppColors.primaryColor, size: 22),
                               ),
-                            );
-                          },
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: _idController,
+                                  focusNode: _idFocus,
+                                  showCursor: true,
+                                  cursorColor: AppColors.primaryColor,
+                                  cursorWidth: 2,
+                                  cursorRadius: const Radius.circular(2),
+                                  keyboardType: TextInputType.text,
+                                  maxLength: 20,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w400,
+                                    letterSpacing: 0.5,
+                                    color: Colors.black87,
+                                  ),
+                                  decoration: InputDecoration(
+                                    counterText: '',
+                                    hintText: 'Enter Subscriber ID / VC No.',
+                                    hintStyle: TextStyle(
+                                        color: Colors.grey.shade400,
+                                        fontSize: 14),
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: () {},
+                                icon: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primaryColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                      Icons.contact_mail_outlined,
+                                      color: AppColors.primaryColor,
+                                      size: 20),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Divider(
+                            color: Colors.grey.shade100,
+                            thickness: 1,
+                            height: 20),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 8, 14),
+                          child: Row(
+                            children: [
+                              _buildLogo(
+                                  selectedOperator,
+                                  opData['logo'],
+                                  opData['color'] as Color,
+                                  38),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(selectedOperator,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13)),
+                              ),
+                              TextButton.icon(
+                                onPressed: () => _showOperatorSheet(context),
+                                icon: const Icon(
+                                    Icons.swap_horiz_rounded, size: 16),
+                                label: const Text('Change'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: AppColors.primaryColor,
+                                  textStyle: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryColor.withOpacity(0.08),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(Icons.tv_rounded,
-                                      color: AppColors.primaryColor, size: 22),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _idController,
-                                    focusNode: _idFocus,
-                                    showCursor: true,
-                                    cursorColor: AppColors.primaryColor,
-                                    cursorWidth: 2,
-                                    cursorRadius: const Radius.circular(2),
-                                    keyboardType: TextInputType.text,
-                                    maxLength: 20,
-                                    style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w400,
-                                      letterSpacing: 0.5,
-                                      color: Colors.black87,
-                                    ),
-                                    decoration: InputDecoration(
-                                      counterText: '',
-                                      hintText: 'Enter Subscriber ID / VC No.',
-                                      hintStyle: TextStyle(
-                                          color: Colors.grey.shade400,
-                                          fontSize: 14),
-                                      border: InputBorder.none,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {},
-                                  icon: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primaryColor.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Icon(
-                                        Icons.contact_mail_outlined,
-                                        color: AppColors.primaryColor,
-                                        size: 20),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(
-                              color: Colors.grey.shade100,
-                              thickness: 1,
-                              height: 20),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 0, 8, 14),
-                            child: Row(
-                              children: [
-                                _buildLogo(
-                                    selectedOperator,
-                                    opData['logo'],
-                                    opData['color'] as Color,
-                                    38),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(selectedOperator,
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 13)),
-                                ),
-                                TextButton.icon(
-                                  onPressed: () => _showOperatorSheet(context),
-                                  icon: const Icon(
-                                      Icons.swap_horiz_rounded, size: 16),
-                                  label: const Text('Change'),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: AppColors.primaryColor,
-                                    textStyle: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                ],
-              ),
+                ),
+                const SizedBox(height: 28),
+              ],
             ),
           ),
         ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
 
-              // Amount Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 15,
-                        offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Recharge Amount',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey.shade700,
-                            letterSpacing: 0.5)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Text('₹',
-                              style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primaryColor)),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _amountController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(5),
-                            ],
-                            cursorColor: AppColors.primaryColor,
-                            cursorWidth: 2,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: '0',
-                              hintStyle: TextStyle(
-                                color: Colors.grey.shade500,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w300,
-                              ),
-                              border: InputBorder.none,
-                              suffixIcon: TextButton(
-                                onPressed: () {},
-                                child: const Text('Customer Info',
-                                    style: TextStyle(
-                                        color: AppColors.primaryColor,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12)),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+        // SCROLLABLE BOTTOM CONTENT
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+            physics: const ClampingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-              const SizedBox(height: 20),
-
-              // ✅ JADOO: Animated Pay Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _processRecharge,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                // Amount Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4)),
+                    ],
                   ),
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: _isLoading
-                            ? [Colors.grey.shade400, Colors.grey.shade500]
-                            : [const Color(0xFF00695C), const Color(0xFF009688)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: _isLoading
-                          ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                          : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Recharge Amount',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade700,
+                              letterSpacing: 0.5)),
+                      const SizedBox(height: 12),
+                      Row(
                         children: [
-                          Icon(Icons.lock_rounded,
-                              color: Colors.white70, size: 16),
-                          SizedBox(width: 8),
-                          Text('Proceed to Pay',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5)),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text('₹',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primaryColor)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _amountController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(5),
+                              ],
+                              cursorColor: AppColors.primaryColor,
+                              cursorWidth: 2,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: '0',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey.shade500,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w300,
+                                ),
+                                border: InputBorder.none,
+                                suffixIcon: TextButton(
+                                  onPressed: () {},
+                                  child: const Text('Customer Info',
+                                      style: TextStyle(
+                                          color: AppColors.primaryColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12)),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ✅ Animated Pay Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _processRecharge,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: _isLoading
+                              ? [Colors.grey.shade400, Colors.grey.shade500]
+                              : [const Color(0xFF00695C), const Color(0xFF009688)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Container(
+                        alignment: Alignment.center,
+                        child: _isLoading
+                            ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                            : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.lock_rounded,
+                                color: Colors.white70, size: 16),
+                            SizedBox(width: 8),
+                            Text('Proceed to Pay',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5)),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Quick Amounts
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Quick Amounts',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87)),
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text('View Plans →',
+                // Quick Amounts
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Quick Amounts',
                         style: TextStyle(
-                            color: AppColors.primaryColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              _DthQuickAmountSelector(
-                plans: quickPlans,
-                amountController: _amountController,
-              ),
-
-              const SizedBox(height: 28),
-
-              // Recent Recharges
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Recent Recharges',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black87)),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
-                        ),
-                      );
-                    },
-                    child: const Text('See All →',
-                        style: TextStyle(
-                            color: AppColors.primaryColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 15,
-                        offset: const Offset(0, 4)),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87)),
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text('View Plans →',
+                          style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13)),
+                    ),
                   ],
                 ),
-                child: Column(
-                  children: recentTransactions.asMap().entries.map((entry) {
-                    int idx = entry.key;
-                    var t = entry.value;
-                    return Column(
-                      children: [
-                        ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 6),
-                          leading: _buildLogo(
-                              t['operator'],
-                              t['operatorLogo'],
-                              t['operatorColor'] as Color,
-                              44),
-                          title: Text(t['name'],
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14)),
-                          subtitle: Text(
-                              '${t['id']} • ${t['operator']}',
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade500)),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text('₹${t['amount']}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 14,
-                                      color: Colors.black87)),
-                              Text(t['date'],
-                                  style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey.shade400)),
-                            ],
-                          ),
-                          onTap: () {
-                            _idController.text = t['id'];
-                            _amountController.text = t['amount'];
-                            setState(() {
-                              selectedOperator = t['operator'];
-                              _operatorSelected = true; // Auto skip to screen 2
-                            });
-                          },
-                        ),
-                        if (idx != recentTransactions.length - 1)
-                          Divider(
-                              height: 1,
-                              color: Colors.grey.shade100,
-                              indent: 76,
-                              endIndent: 16),
-                      ],
-                    );
-                  }).toList(),
+                const SizedBox(height: 8),
+                _DthQuickAmountSelector(
+                  plans: quickPlans,
+                  amountController: _amountController,
                 ),
-              ),
 
-              const SizedBox(height: 20),
-            ]),
+                const SizedBox(height: 28),
+
+                // Recent Recharges
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Recent Recharges',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87)),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
+                          ),
+                        );
+                      },
+                      child: const Text('See All →',
+                          style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Column(
+                    children: recentTransactions.asMap().entries.map((entry) {
+                      int idx = entry.key;
+                      var t = entry.value;
+                      return Column(
+                        children: [
+                          ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
+                            leading: _buildLogo(
+                                t['operator'],
+                                t['operatorLogo'],
+                                t['operatorColor'] as Color,
+                                44),
+                            title: Text(t['name'],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14)),
+                            subtitle: Text(
+                                '${t['id']} • ${t['operator']}',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade500)),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('₹${t['amount']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                        color: Colors.black87)),
+                                Text(t['date'],
+                                    style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.grey.shade400)),
+                              ],
+                            ),
+                            onTap: () {
+                              _idController.text = t['id'];
+                              _amountController.text = t['amount'];
+                              setState(() {
+                                selectedOperator = t['operator'];
+                                _operatorSelected = true; // Auto skip to screen 2
+                              });
+                            },
+                          ),
+                          if (idx != recentTransactions.length - 1)
+                            Divider(
+                                height: 1,
+                                color: Colors.grey.shade100,
+                                indent: 76,
+                                endIndent: 16),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ],

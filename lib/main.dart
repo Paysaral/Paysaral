@@ -10,13 +10,34 @@ void main() {
   runApp(const MyApp());
 }
 
+// ==================== CUSTOM SCROLL BEHAVIOR ====================
+// ✅ बस ये क्लास जोड़ी है ताकि पूरा ऐप रबर की तरह ना खिंचे
+class NoStretchScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const ClampingScrollPhysics();
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      // ✅ बस ये 5 लाइन जोड़ी हैं पूरे ऐप में NoStretchScroll लागू करने के लिए
+      builder: (context, child) {
+        return ScrollConfiguration(
+          behavior: NoStretchScrollBehavior(),
+          child: child!,
+        );
+      },
+      home: const SplashScreen(),
     );
   }
 }

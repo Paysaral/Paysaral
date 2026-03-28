@@ -1,26 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'app_colors.dart';
 import 'recharge_history_screen.dart';
 import 'recharge_details_screen.dart';
 
-class MobileRechargeScreen extends StatefulWidget {
+class PostpaidRechargeScreen extends StatefulWidget {
   final bool isB2B;
-  const MobileRechargeScreen({super.key, this.isB2B = false});
+  const PostpaidRechargeScreen({super.key, this.isB2B = false});
 
   @override
-  State<MobileRechargeScreen> createState() => _MobileRechargeScreenState();
+  State<PostpaidRechargeScreen> createState() => _PostpaidRechargeScreenState();
 }
 
-class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
+class _PostpaidRechargeScreenState extends State<PostpaidRechargeScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
   final FocusNode _phoneFocus = FocusNode();
 
+  int _currentOfferIndex = 0;
   bool _isLoading = false;
   bool _isPhoneValid = false;
 
-  String selectedOperator = 'Airtel';
+  String selectedOperator = 'Jio';
   String selectedCircle = 'Jharkhand';
 
   final List<Map<String, dynamic>> operatorsList = [
@@ -51,19 +53,10 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     'West Bengal', 'Assam', 'Odisha', 'UP East', 'UP West',
   ];
 
-  final List<Map<String, dynamic>> recentRecharges = [
-    {'name': 'Rahul Singh', 'number': '9876543210', 'operator': 'Jio',    'amount': '299'},
-    {'name': 'Mom',         'number': '9123456789', 'operator': 'Airtel', 'amount': '199'},
-    {'name': 'Shop WiFi',   'number': '9988776655', 'operator': 'Vi',     'amount': '349'},
-    {'name': 'Papa',        'number': '9431000000', 'operator': 'Airtel', 'amount': '666'},
-    {'name': 'Amit',        'number': '9123412345', 'operator': 'Jio',    'amount': '199'},
-  ];
-
-  final List<Map<String, dynamic>> quickPlans = [
-    {'amount': '199', 'validity': '28 Days', 'data': '1.5GB/day'},
-    {'amount': '299', 'validity': '28 Days', 'data': '2GB/day'},
-    {'amount': '349', 'validity': '28 Days', 'data': '2.5GB/day'},
-    {'amount': '666', 'validity': '56 Days', 'data': '2GB/day'},
+  final List<String> offerImages = [
+    'assets/images/bg1.png',
+    'https://img.freepik.com/premium-photo/digital-payment-technology-graphic_53876-113543.jpg',
+    'https://img.freepik.com/premium-photo/online-shopping-digital-marketing_53876-113539.jpg',
   ];
 
   @override
@@ -84,7 +77,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
   void _onNumberChanged(String value) {
     if (value.length == 10) {
-      String detectedOp = 'Airtel';
+      String detectedOp = 'Jio';
       if (value.startsWith('98') || value.startsWith('99')) {
         detectedOp = 'Airtel';
       } else if (value.startsWith('7') || value.startsWith('8')) {
@@ -138,7 +131,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
       MaterialPageRoute(
         builder: (_) => RechargeDetailsScreen(
           isB2B: widget.isB2B,
-          category: 'Prepaid',
+          category: 'Postpaid',
           amount: amount,
           operatorName: selectedOperator,
           rechargeNumber: '+91 $number',
@@ -182,8 +175,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     );
   }
 
-  Widget _buildOperatorList(
-      String tempOp, StateSetter setS, Function(String) onSelect) {
+  Widget _buildOperatorList(String tempOp, StateSetter setS, Function(String) onSelect) {
     return ListView.separated(
       key: const ValueKey('operators'),
       shrinkWrap: true,
@@ -200,8 +192,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
         return InkWell(
           onTap: () => onSelect(op['name']),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             child: Row(
               children: [
                 Container(
@@ -210,9 +201,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     color: Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isSel
-                          ? AppColors.primaryColor
-                          : Colors.grey.shade200,
+                      color: isSel ? AppColors.primaryColor : Colors.grey.shade200,
                       width: isSel ? 2 : 1,
                     ),
                     boxShadow: [
@@ -243,20 +232,14 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   child: Text(op['name'],
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: isSel
-                            ? FontWeight.w700
-                            : FontWeight.w400,
-                        color: isSel
-                            ? AppColors.primaryColor
-                            : Colors.black87,
+                        fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
+                        color: isSel ? AppColors.primaryColor : Colors.black87,
                       )),
                 ),
                 if (isSel)
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.primaryColor, size: 22)
+                  const Icon(Icons.check_circle_rounded, color: AppColors.primaryColor, size: 22)
                 else
-                  Icon(Icons.arrow_forward_ios_rounded,
-                      size: 14, color: Colors.grey.shade400),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey.shade400),
               ],
             ),
           ),
@@ -265,8 +248,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     );
   }
 
-  Widget _buildCircleList(
-      String tempOp, String tempCircle, BuildContext ctx, StateSetter setS) {
+  Widget _buildCircleList(String tempOp, String tempCircle, BuildContext ctx, StateSetter setS) {
     return ListView.separated(
       key: const ValueKey('circles'),
       shrinkWrap: true,
@@ -288,40 +270,30 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
             Navigator.pop(ctx);
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             child: Row(
               children: [
                 Container(
                   width: 38, height: 38,
                   decoration: BoxDecoration(
-                    color: isSel
-                        ? AppColors.primaryColor.withOpacity(0.1)
-                        : Colors.grey.shade100,
+                    color: isSel ? AppColors.primaryColor.withOpacity(0.1) : Colors.grey.shade100,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(Icons.location_on_outlined,
                       size: 18,
-                      color: isSel
-                          ? AppColors.primaryColor
-                          : Colors.grey),
+                      color: isSel ? AppColors.primaryColor : Colors.grey),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(circlesList[index],
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: isSel
-                            ? FontWeight.w700
-                            : FontWeight.w400,
-                        color: isSel
-                            ? AppColors.primaryColor
-                            : Colors.black87,
+                        fontWeight: isSel ? FontWeight.w700 : FontWeight.w400,
+                        color: isSel ? AppColors.primaryColor : Colors.black87,
                       )),
                 ),
                 if (isSel)
-                  const Icon(Icons.check_circle_rounded,
-                      color: AppColors.primaryColor, size: 22),
+                  const Icon(Icons.check_circle_rounded, color: AppColors.primaryColor, size: 22),
               ],
             ),
           ),
@@ -372,24 +344,17 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                     children: [
                       if (step == 2)
                         IconButton(
-                          icon: const Icon(
-                              Icons.arrow_back_ios_new_rounded,
-                              size: 20, color: Colors.black87),
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: Colors.black87),
                           onPressed: () => setS(() => step = 1),
                         ),
                       Padding(
-                        padding:
-                        EdgeInsets.only(left: step == 1 ? 12 : 0),
+                        padding: EdgeInsets.only(left: step == 1 ? 12 : 0),
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 250),
                           child: Text(
-                            step == 1
-                                ? 'Select Operator'
-                                : 'Select Circle for $tempOp',
+                            step == 1 ? 'Select Operator' : 'Select Circle for $tempOp',
                             key: ValueKey(step),
-                            style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -412,82 +377,11 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                       step = 2;
                     });
                   })
-                      : _buildCircleList(
-                      tempOp, tempCircle, ctx, setS),
+                      : _buildCircleList(tempOp, tempCircle, ctx, setS),
                 ),
                 const SizedBox(height: 16),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showBrowsePlansSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                  width: 48, height: 5,
-                  decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))
-              ),
-              const SizedBox(height: 20),
-              const Text('Browse Plans', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.deepMenuColor)),
-              const SizedBox(height: 16),
-              Divider(color: Colors.grey.shade200, height: 1),
-              Expanded(
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: quickPlans.length * 3,
-                  separatorBuilder: (_, __) => Divider(color: Colors.grey.shade100, height: 24),
-                  itemBuilder: (_, i) {
-                    final plan = quickPlans[i % quickPlans.length];
-                    return InkWell(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        setState(() {
-                          _amountController.text = plan['amount']!;
-                        });
-                        Navigator.pop(ctx);
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('₹${plan['amount']}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-                              const SizedBox(height: 4),
-                              Text('Validity: ${plan['validity']} | Data: ${plan['data']}', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.primaryColor, width: 1.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text('Select', style: TextStyle(color: AppColors.primaryColor, fontSize: 12, fontWeight: FontWeight.bold)),
-                          )
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -527,18 +421,15 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 6),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: Colors.white, size: 20),
+                              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                               onPressed: () => Navigator.pop(context),
                             ),
                             const Expanded(
-                              child: Text('Prepaid Recharge',
+                              child: Text('Postpaid Bill Payment', // ✅ Title Updated
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                       color: Colors.white,
@@ -552,8 +443,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   color: Colors.white.withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.history_rounded,
-                                    color: Colors.white, size: 18),
+                                child: const Icon(Icons.history_rounded, color: Colors.white, size: 18),
                               ),
                               onPressed: () {
                                 Navigator.push(
@@ -568,7 +458,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       ),
 
-                      // ✅ Toggle Button removed, making UI much cleaner!
                       const SizedBox(height: 12),
 
                       Padding(
@@ -725,7 +614,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Recharge Amount',
+                              'Bill Amount',
                               style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -773,9 +662,9 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                       ),
                                       border: InputBorder.none,
                                       suffixIcon: TextButton(
-                                        onPressed: () => _showBrowsePlansSheet(context),
+                                        onPressed: () {},
                                         child: const Text(
-                                          'Browse Plans',
+                                          'View Bill',
                                           style: TextStyle(
                                               color: AppColors.primaryColor,
                                               fontWeight: FontWeight.w600,
@@ -824,7 +713,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                                   Icon(Icons.lock_rounded, color: Colors.white70, size: 16),
                                   SizedBox(width: 8),
                                   Text(
-                                    'Proceed to Pay',
+                                    'Pay Bill',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 16,
@@ -838,133 +727,59 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Quick Plans',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87)),
-                          TextButton(
-                            onPressed: () => _showBrowsePlansSheet(context),
-                            child: const Text('All Plans →',
-                                style: TextStyle(
-                                    color: AppColors.primaryColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      _QuickPlanSelector(
-                        plans: quickPlans,
-                        amountController: _amountController,
-                      ),
-                      const SizedBox(height: 28),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Recent Recharges',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.black87)),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => RechargeHistoryScreen(isB2B: widget.isB2B),
-                                ),
-                              );
-                            },
-                            child: const Text('See All →',
-                                style: TextStyle(
-                                    color: AppColors.primaryColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13)),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
-                                blurRadius: 15,
-                                offset: const Offset(0, 4)),
-                          ],
+
+                      // ✅ Postpaid Carousel
+                      CarouselSlider.builder(
+                        itemCount: offerImages.length,
+                        options: CarouselOptions(
+                          height: 110,
+                          viewportFraction: 1.0,
+                          autoPlay: true,
+                          autoPlayInterval: const Duration(seconds: 3),
+                          onPageChanged: (i, _) =>
+                              setState(() => _currentOfferIndex = i),
                         ),
-                        child: Column(
-                          children: recentRecharges
-                              .asMap()
-                              .entries
-                              .map((entry) {
-                            int idx = entry.key;
-                            var r = entry.value;
-                            var opD = operatorsList.firstWhere(
-                                    (o) => o['name'] == r['operator']);
-                            return Column(
-                              children: [
-                                ListTile(
-                                  contentPadding:
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 6),
-                                  leading: _buildLogo(
-                                      r['operator'],
-                                      opD['logo'],
-                                      opD['color'] as Color,
-                                      42),
-                                  title: Text(r['name'],
-                                      style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14)),
-                                  subtitle: Text(
-                                      '${r['number']} • ${r['operator']}',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500)),
-                                  trailing: Column(
-                                    mainAxisAlignment:
-                                    MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.end,
-                                    children: [
-                                      Text('₹${r['amount']}',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 14,
-                                              color: Colors.black87)),
-                                      Text('Tap to recharge',
-                                          style: TextStyle(
-                                              fontSize: 10,
-                                              color: AppColors.primaryColor
-                                                  .withOpacity(0.7))),
-                                    ],
-                                  ),
-                                  onTap: () {
-                                    _phoneController.text = r['number'];
-                                    _amountController.text = r['amount'].replaceAll('₹', '');
-                                    setState(() {
-                                      _isPhoneValid = true;
-                                      selectedOperator = r['operator'];
-                                    });
-                                  },
-                                ),
-                                if (idx != recentRecharges.length - 1)
-                                  Divider(
-                                      height: 1,
-                                      color: Colors.grey.shade100,
-                                      indent: 74,
-                                      endIndent: 16),
-                              ],
-                            );
-                          }).toList(),
+                        itemBuilder: (ctx, i, _) => Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                    color: Colors.black12, blurRadius: 6)
+                              ]),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: offerImages[i].startsWith('http')
+                                ? Image.network(offerImages[i],
+                                fit: BoxFit.fill,
+                                width: double.infinity,
+                                errorBuilder: (c, e, s) => Container(
+                                    color: Colors.grey.shade200))
+                                : Image.asset(offerImages[i],
+                                fit: BoxFit.fill,
+                                width: double.infinity,
+                                errorBuilder: (c, e, s) => Container(
+                                    color: Colors.grey.shade200)),
+                          ),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: offerImages.asMap().entries.map((e) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: _currentOfferIndex == e.key ? 20 : 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: _currentOfferIndex == e.key
+                                  ? AppColors.primaryColor
+                                  : Colors.grey.shade300,
+                            ),
+                          );
+                        }).toList(),
                       ),
                       const SizedBox(height: 20),
                     ],
@@ -974,125 +789,6 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _QuickPlanSelector extends StatefulWidget {
-  final List<Map<String, dynamic>> plans;
-  final TextEditingController amountController;
-
-  const _QuickPlanSelector({
-    required this.plans,
-    required this.amountController,
-  });
-
-  @override
-  State<_QuickPlanSelector> createState() => _QuickPlanSelectorState();
-}
-
-class _QuickPlanSelectorState extends State<_QuickPlanSelector> {
-  String _selected = '';
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: widget.plans.map((plan) {
-          final bool isSel = _selected == plan['amount'];
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selected = plan['amount']);
-              widget.amountController.text = plan['amount'];
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 10),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('₹${plan['amount']}',
-                              style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.transparent)),
-                          const SizedBox(height: 3),
-                          Text('${plan['data']} • ${plan['validity']}',
-                              style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.transparent)),
-                        ],
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
-                        opacity: isSel ? 1.0 : 0.0,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color(0xFF00695C),
-                                Color(0xFF009688)
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 250),
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color:
-                              isSel ? Colors.white : Colors.black87,
-                            ),
-                            child: Text('₹${plan['amount']}'),
-                          ),
-                          const SizedBox(height: 3),
-                          AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 250),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isSel
-                                  ? Colors.white70
-                                  : Colors.grey.shade500,
-                            ),
-                            child: Text(
-                                '${plan['data']} • ${plan['validity']}'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }).toList(),
       ),
     );
   }

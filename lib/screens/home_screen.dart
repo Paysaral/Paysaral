@@ -6,6 +6,7 @@ import 'app_colors.dart';
 import 'aeps_selection_sheet.dart'; // ✅ JADOO: Sirf AEPS sheet ka import joda hai
 
 import 'mobile_recharge_screen.dart';
+import 'postpaid_recharge_screen.dart'; // ✅ JADOO: Postpaid screen ka import lag gaya!
 import 'dth_recharge_screen.dart';
 import 'electricity_bill_screen.dart';
 import 'transaction_history_screen.dart'; // ✅ Asli Ledger Screen
@@ -116,6 +117,122 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!a['isPinned'] && b['isPinned']) return 1;
       return a['order'].compareTo(b['order']);
     });
+  }
+
+  // ✅ View All Sheet (Gap Balanced manually here)
+  void _showAllRechargeBillServices(BuildContext context) {
+    final List<Map<String, dynamic>> allBillServices = [
+      {'icon': Icons.phone_android, 'name': 'Mobile Recharge'},
+      {'icon': Icons.tv, 'name': 'DTH'},
+      {'icon': Icons.settings_cell, 'name': 'Postpaid'},
+      {'icon': Icons.usb, 'name': 'Data Card'},
+      {'icon': Icons.phone, 'name': 'Landline'},
+      {'icon': Icons.router, 'name': 'Broadband'},
+      {'icon': Icons.live_tv, 'name': 'Cable TV'},
+      {'icon': Icons.beach_access_rounded, 'name': 'Insurance'},
+      {'icon': Icons.directions_car, 'name': 'Fastag Bill'},
+      {'icon': Icons.lightbulb_outline, 'name': 'Electricity'},
+      {'icon': Icons.gas_meter, 'name': 'Gas'},
+      {'icon': Icons.water_drop, 'name': 'Water'},
+      {'icon': Icons.real_estate_agent, 'name': 'Loan Pay'},
+      {'icon': Icons.credit_card, 'name': 'Credit Card'},
+      {'icon': Icons.ondemand_video, 'name': 'OTT'},
+      {'icon': Icons.receipt, 'name': 'Tax Pay'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 48, height: 5,
+                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10)),
+              ),
+              const SizedBox(height: 20),
+              const Text('All Recharge & Bill Pay', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.deepMenuColor)),
+              const SizedBox(height: 16),
+              Divider(color: Colors.grey.shade200, height: 1),
+
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                itemCount: allBillServices.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  crossAxisSpacing: 8,
+                  // 🎯 YAHAN SE GAP ADJUST HOTA HAI USTAAD 👇
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.78,
+                ),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+
+                      // Routing Logic
+                      if (allBillServices[index]['name'] == 'Mobile Recharge') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => MobileRechargeScreen(isB2B: isB2B)));
+                      } else if (allBillServices[index]['name'] == 'Postpaid') {
+                        // ✅ JADOO: Postpaid par click karne se seedha nayi Postpaid Screen khulegi
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => PostpaidRechargeScreen(isB2B: isB2B)));
+                      } else if (allBillServices[index]['name'] == 'DTH') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => DthRechargeScreen(isB2B: isB2B)));
+                      } else if (allBillServices[index]['name'] == 'Electricity') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const ElectricityOperatorScreen()));
+                      } else if (allBillServices[index]['name'] == 'Water') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const WaterOperatorScreen()));
+                      } else if (allBillServices[index]['name'] == 'Gas') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const GasOperatorScreen()));
+                      } else if (allBillServices[index]['name'] == 'Fastag Bill') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const FastagOperatorScreen()));
+                      } else if (allBillServices[index]['name'] == 'Credit Card') {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CreditCardOperatorScreen()));
+                      }
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 52, width: 52,
+                          decoration: BoxDecoration(
+                              color: const Color(0xFFF0FAF9),
+                              borderRadius: BorderRadius.circular(14)),
+                          child: Icon(allBillServices[index]['icon'] as IconData,
+                              color: AppColors.primaryColor, size: 26),
+                        ),
+                        const SizedBox(height: 8),
+                        Expanded(
+                            child: Text(allBillServices[index]['name'] as String,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                    height: 1.1))),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -436,9 +553,9 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
-                    // ✅ NAVIGATION (Sari screens connect ho chuki hain, aur ab AEPS bhi)
-                    if (services[index]['name'] == 'AEPS') {
-                      // ✅ Yahan humne aapki alag ki hui AEPS file call kardi hai
+                    if (services[index]['name'] == 'View All') {
+                      _showAllRechargeBillServices(context);
+                    } else if (services[index]['name'] == 'AEPS') {
                       showAepsSelectionSheet(context, isB2B);
                     } else if (services[index]['name'] == 'Mobile') {
                       Navigator.push(context, MaterialPageRoute(

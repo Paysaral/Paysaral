@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
 import 'transaction_history_screen.dart';
 import 'recharge_history_screen.dart';
+import 'aeps_ledger_screen.dart'; // ✅ JADOO: Nayi AEPS Ledger Screen import kar li
 
 class ReportsScreen extends StatefulWidget {
   final double topPadding;
@@ -83,7 +84,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         'title': 'SERVICE TRANSACTIONS',
         'items': [
           {'icon': Icons.phone_android, 'title': 'Recharge & BBPS History', 'subtitle': 'Mobile, DTH, Electricity bill status', 'color': Colors.purple, 'target': const RechargeHistoryScreen(isB2B: true)},
-          {'icon': Icons.fingerprint, 'title': 'AEPS & mATM Report', 'subtitle': 'Cash withdrawal & balance enquiry info', 'color': Colors.teal, 'target': const TransactionHistoryScreen(pageTitle: 'AEPS & mATM Report', isB2B: true)},
+
+          // ✅ JADOO: Teeno ko alag-alag kar diya gaya hai!
+          {'icon': Icons.fingerprint, 'title': 'AEPS Ledger', 'subtitle': 'Cash withdrawal & balance enquiry', 'color': Colors.teal, 'target': const AepsLedgerScreen(isB2B: true)},
+          {'icon': Icons.point_of_sale, 'title': 'mATM Ledger', 'subtitle': 'Micro ATM transaction history', 'color': Colors.cyan.shade700, 'target': const TransactionHistoryScreen(pageTitle: 'mATM Ledger', isB2B: true)},
+          {'icon': Icons.contactless, 'title': 'Aadhaar Pay Ledger', 'subtitle': 'Aadhaar pay transaction records', 'color': Colors.blueGrey, 'target': const TransactionHistoryScreen(pageTitle: 'Aadhaar Pay Ledger', isB2B: true)},
+
           {'icon': Icons.sync_alt, 'title': 'Money Transfer (DMT)', 'subtitle': 'Domestic money remittance status', 'color': Colors.indigo, 'target': const TransactionHistoryScreen(pageTitle: 'DMT History', isB2B: true)},
           {'icon': Icons.flight_takeoff, 'title': 'Travel & Services', 'subtitle': 'Flight, Train, PAN Card transaction history', 'color': Colors.redAccent, 'target': const TransactionHistoryScreen(pageTitle: 'Travel Services Report', isB2B: true)},
         ],
