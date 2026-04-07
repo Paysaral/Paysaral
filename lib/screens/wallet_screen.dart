@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
+import 'package:paysaral/services/api_service.dart'; // 🔥 PAYSARAL BOSS: Apna API Service
 
 class WalletScreen extends StatefulWidget {
   final double topPadding;
   final VoidCallback onGoToReports;
-  final VoidCallback onGoToAddMoney; // ✅ JADOO: Naya callback Add Money ke liye
+  final VoidCallback onGoToAddMoney;
 
   const WalletScreen({
     super.key,
     required this.topPadding,
     required this.onGoToReports,
-    required this.onGoToAddMoney, // ✅ Yahan receive hoga
+    required this.onGoToAddMoney,
   });
 
   @override
@@ -21,6 +22,8 @@ class WalletScreen extends StatefulWidget {
 class _WalletScreenState extends State<WalletScreen> {
   bool isB2B = false;
   bool _isLoading = true;
+  String _walletBalance = "0.00";
+  String _aepsBalance = "0.00"; // 🔥 PAYSARAL BOSS: Naya variable AEPS ke liye
 
   @override
   void initState() {
@@ -30,11 +33,15 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Future<void> _loadWalletData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await Future.delayed(const Duration(milliseconds: 50));
+
+    // 1. Backend se dono (Main + AEPS) balance nikal lo
+    Map<String, String> balances = await ApiService.getWalletBalance();
 
     if (mounted) {
       setState(() {
         isB2B = prefs.getBool('isB2B') ?? false;
+        _walletBalance = balances['main']!; // Main Balance
+        _aepsBalance = balances['aeps']!;   // AEPS Balance
         _isLoading = false;
       });
     }
@@ -142,7 +149,7 @@ class _WalletScreenState extends State<WalletScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                const Text('₹ 1,250.00', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                Text('₹ $_walletBalance', style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, letterSpacing: 1)),
               ],
             ),
           ),
@@ -150,7 +157,6 @@ class _WalletScreenState extends State<WalletScreen> {
             decoration: BoxDecoration(color: Colors.black.withOpacity(0.15), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24))),
             child: Row(
               children: [
-                // ✅ JADOO: Yahan Add Money button par onGoToAddMoney lag gaya
                 Expanded(child: _cardActionButton(Icons.add_circle, 'Add Money', onTap: widget.onGoToAddMoney)),
                 Container(width: 1, height: 30, color: Colors.white24),
                 Expanded(child: _cardActionButton(Icons.send, 'Send Money', onTap: () {})),
@@ -194,11 +200,10 @@ class _WalletScreenState extends State<WalletScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text('₹ 4,500.00', style: TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.bold)),
+                    Text('₹ $_walletBalance', style: const TextStyle(color: Colors.white, fontSize: 29, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
-              // ✅ JADOO: Yahan B2B ke Add Money button par onGoToAddMoney lag gaya
               InkWell(
                 onTap: widget.onGoToAddMoney,
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
@@ -249,7 +254,8 @@ class _WalletScreenState extends State<WalletScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text('₹ 12,850.50', style: TextStyle(color: AppColors.accentColor, fontSize: 29, fontWeight: FontWeight.bold)),
+                    // 🔥 PAYSARAL BOSS: Ab yahan dummy hat gaya, asli AEPS balance aayega
+                    Text('₹ $_aepsBalance', style: const TextStyle(color: AppColors.accentColor, fontSize: 29, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),

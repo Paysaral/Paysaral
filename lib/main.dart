@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'utils/validators.dart';
 import 'screens/dashboard_screen.dart';
+import 'services/auth_service.dart'; // 🔥 PAYSARAL BOSS FIX: Apna AuthService import kar liya
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,7 +12,7 @@ void main() {
 }
 
 // ==================== CUSTOM SCROLL BEHAVIOR ====================
-// ✅ बस ये क्लास जोड़ी है ताकि पूरा ऐप रबर की तरह ना खिंचे
+// ✅ बस ये क्लास जोड़ी है ताकि पूरा ऐप रबर की तरह ना खिंचे
 class NoStretchScrollBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // ✅ बस ये 5 लाइन जोड़ी हैं पूरे ऐप में NoStretchScroll लागू करने के लिए
+      // ✅ बस ये 5 लाइन जोड़ी हैं पूरे ऐप में NoStretchScroll लागू करने के लिए
       builder: (context, child) {
         return ScrollConfiguration(
           behavior: NoStretchScrollBehavior(),
@@ -194,6 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _pass    = TextEditingController();
   bool _remember = false;
   bool _hidePass = true;
+  bool _isLoading = false; // 🔥 PAYSARAL BOSS FIX: Loading state add kiya
 
   @override
   void dispose() {
@@ -298,23 +300,51 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               width: double.infinity, height: 50,
                               child: ElevatedButton(
-                                onPressed: () async {
+                                // 🔥 PAYSARAL BOSS FIX: Agar loading ho raha hai, toh button disable ho jayega
+                                onPressed: _isLoading ? null : () async {
                                   if (_formKey.currentState!.validate()) {
-                                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                                    String userMobile = _mobile.text.trim();
 
-                                    await prefs.setString('currentUser', userMobile);
-                                    await prefs.setBool('isLoggedIn', true);
+                                    // 1. Loading Start karo
+                                    setState(() { _isLoading = true; });
 
-                                    bool savedRole = prefs.getBool('role_$userMobile') ?? false;
-                                    await prefs.setBool('isB2B', savedRole);
+                                    // 2. Real API Call
+                                    final response = await AuthService.login(
+                                      _mobile.text.trim(),
+                                      _pass.text.trim(),
+                                    );
 
                                     if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Login Successful! 🎉'), backgroundColor: Color(0xFF009688), duration: Duration(seconds: 1))
-                                    );
-                                    // ✅ JADOO: Removed 'const' from DashboardScreen
-                                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardScreen()));
+
+                                    // 3. Loading Stop karo
+                                    setState(() { _isLoading = false; });
+
+                                    // 4. API Response Check
+                                    if (response['success'] == true) {
+                                      // Token toh AuthService ne save kar liya, baaki aapka purana data save karte hain
+                                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                                      String userMobile = _mobile.text.trim();
+
+                                      await prefs.setString('currentUser', userMobile);
+                                      await prefs.setBool('isLoggedIn', true);
+
+                                      // Backend se aaye role ke hisaab se B2B set karte hain
+                                      bool isB2B = false;
+                                      if (response['user'] != null && response['user']['role'] == 'Retailer') {
+                                        isB2B = true;
+                                      }
+                                      await prefs.setBool('isB2B', isB2B);
+
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text(response['message'] ?? 'Login Successful! 🎉'), backgroundColor: const Color(0xFF009688), duration: const Duration(seconds: 1))
+                                      );
+
+                                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardScreen()));
+                                    } else {
+                                      // Agar API se error aaya (galat password)
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text(response['message'] ?? 'Login Failed!'), backgroundColor: Colors.red, duration: const Duration(seconds: 2))
+                                      );
+                                    }
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -322,7 +352,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                     elevation: 4,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                                 ),
-                                child: const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                                // 🔥 PAYSARAL BOSS FIX: Loading ke time gol ghoomta hua loader dikhega
+                                child: _isLoading
+                                    ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5)
+                                )
+                                    : const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                               ),
                             ),
                             const SizedBox(height: 20),

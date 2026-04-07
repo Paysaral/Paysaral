@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 import 'recharge_history_screen.dart';
 import 'recharge_details_screen.dart';
+import 'package:paysaral/services/api_service.dart'; // 🔥 PAYSARAL BOSS: Apna API Service
 
 class MobileRechargeScreen extends StatefulWidget {
   final bool isB2B;
@@ -109,6 +110,7 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
     }
   }
 
+  // 🔥 PAYSARAL BOSS: Bas is function mein asli API fit ki hai, baaki UI same hai!
   Future<void> _processRecharge() async {
     FocusScope.of(context).unfocus();
 
@@ -126,30 +128,43 @@ class _MobileRechargeScreenState extends State<MobileRechargeScreen> {
 
     setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(seconds: 2));
+    // 1. Asli API Hit (Token ke sath)
+    final response = await ApiService.processRecharge(number, selectedOperator, amount);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
+    // 2. Agar Recharge Success Hua
+    if (response['success'] == true) {
+      var opData = operatorsList.firstWhere((o) => o['name'] == selectedOperator);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => RechargeDetailsScreen(
-          isB2B: widget.isB2B,
-          category: 'Prepaid',
-          amount: amount,
-          operatorName: selectedOperator,
-          rechargeNumber: '+91 $number',
-          txnId: 'TXN${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
-          date: '25 Mar 2026, 04:30 PM',
-          rewardAmount: widget.isB2B ? '4.50' : '0.00',
-          operatorLogoText: selectedOperator[0],
-          operatorLogoBg: opData['color'] as Color,
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => RechargeDetailsScreen(
+            isB2B: widget.isB2B,
+            category: 'Prepaid',
+            amount: amount,
+            operatorName: selectedOperator,
+            rechargeNumber: '+91 $number',
+            // 🔥 Backend se aaya hua ASLI Transaction ID
+            txnId: response['txn_id'] ?? 'TXN${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}',
+            date: '25 Mar 2026, 04:30 PM',
+            rewardAmount: widget.isB2B ? '4.50' : '0.00',
+            operatorLogoText: selectedOperator[0],
+            operatorLogoBg: opData['color'] as Color,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      // 3. Agar error aaye (Jaise balance kam ho)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response['message'] ?? 'Recharge Failed!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildLogo(String name, String url, Color color, double size) {

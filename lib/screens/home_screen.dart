@@ -17,6 +17,7 @@ import 'water_operator_screen.dart';
 import 'gas_operator_screen.dart'; // ✅ Gas Operator Import
 import 'fastag_operator_screen.dart'; // ✅ Fastag Operator Import
 import 'credit_card_operator_screen.dart'; // ✅ Credit Card Operator Import lag gaya!
+import 'package:paysaral/screens/money_transfer_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final double topPadding;
@@ -585,6 +586,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(context, MaterialPageRoute(
                           builder: (context) =>
                           const CreditCardOperatorScreen()));
+                    } else if (services[index]['name'] == 'Money Transfer') {
+                      // ✅ JADOO: Ab Money Transfer icon par click karne se MoneyTransferScreen khulegi
+                      Navigator.push(context, MaterialPageRoute(
+                          builder: (context) => const MoneyTransferScreen()));
                     }
                   },
                   child: Column(
